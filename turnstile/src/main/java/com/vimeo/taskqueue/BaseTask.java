@@ -52,6 +52,7 @@ import java.util.concurrent.Callable;
  * <p/>
  * Created by kylevenn on 2/9/16.
  */
+@SuppressWarnings("unused")
 public abstract class BaseTask implements Serializable, Callable {
 
     private static final long serialVersionUID = -2051421294839668480L;
@@ -198,6 +199,7 @@ public abstract class BaseTask implements Serializable, Callable {
     /**
      * Unique identifier for this task
      */
+    @NonNull
     @SerializedName("id")
     protected String mId;
 
@@ -232,7 +234,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * Most basic constructor with all requirements.
      * If this constructor is used, the Tasks {@link TaskState} will default to {@link TaskState#READY}
      */
-    public BaseTask(String id) {
+    public BaseTask(@NonNull String id) {
         mId = id;
         mCreatedTimeMillis = System.currentTimeMillis();
     }
@@ -240,7 +242,7 @@ public abstract class BaseTask implements Serializable, Callable {
     /**
      * Optionally initialize the task with a {@link TaskState} and created time (for initialization from database)
      */
-    public BaseTask(String id, TaskState taskState, long createdTimeMillis) {
+    public BaseTask(@NonNull String id, TaskState taskState, long createdTimeMillis) {
         mId = id;
         mState = taskState;
         mCreatedTimeMillis = createdTimeMillis;
@@ -372,6 +374,7 @@ public abstract class BaseTask implements Serializable, Callable {
     // Getters
     // -----------------------------------------------------------------------------------------------------
     // <editor-fold desc="Getters">
+    @NonNull
     public String getId() {
         return mId;
     }

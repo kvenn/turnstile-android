@@ -48,7 +48,7 @@ public abstract class NetworkUtil implements NetworkEventProvider {
     final BroadcastReceiver mNetworkChangeReceiver;
 
     @RequiresPermission(permission.ACCESS_NETWORK_STATE)
-    NetworkUtil(Context context) {
+    public NetworkUtil(Context context) {
         mContext = context;
 
         // Receiver that just tells this class to tell the listener that something changed

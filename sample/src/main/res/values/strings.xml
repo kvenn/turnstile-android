@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Sample</string>
+    <string name="notification_click">Notification Clicked!</string>
+    <string name="started_text">Added task, id: %1$s</string>
+    <string name="result_text">Task completed, id: %1$s</string>
+    <string name="failure_text">Failed to add task, id: %1$s</string>
+</resources>
