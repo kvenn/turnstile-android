@@ -8,36 +8,36 @@ import com.vimeo.sample.BuildConfig;
 import com.vimeo.taskqueue.LoggingInterface;
 import com.vimeo.taskqueue.models.TaskError;
 
-public class SampleLoggingInterface implements LoggingInterface<SampleTask> {
+public class SimpleLoggingInterface implements LoggingInterface<SimpleTask> {
 
     private static final String TAG = "SampleTaskLogger";
 
     @NonNull
-    private static String id(@Nullable SampleTask task) {
+    private static String id(@Nullable SimpleTask task) {
         return (task == null ? "null" : task.getId());
     }
 
     @Override
-    public void logTaskFailure(@Nullable SampleTask task, TaskError error) {
+    public void logTaskFailure(@Nullable SimpleTask task, TaskError error) {
         Log.e(TAG, "Error on task: " + id(task) + ":" + error.getMessage());
     }
 
     @Override
-    public void logTaskSuccess(@Nullable SampleTask task) {
+    public void logTaskSuccess(@Nullable SimpleTask task) {
         if (BuildConfig.DEBUG) {
             Log.i(TAG, "Success running task with id: " + id(task));
         }
     }
 
     @Override
-    public void logTaskCancel(@Nullable SampleTask task) {
+    public void logTaskCancel(@Nullable SimpleTask task) {
         if (BuildConfig.DEBUG) {
             Log.i(TAG, "Cancelled task with id: " + id(task));
         }
     }
 
     @Override
-    public void logTaskRetry(@Nullable SampleTask task) {
+    public void logTaskRetry(@Nullable SimpleTask task) {
         if (BuildConfig.DEBUG) {
             Log.i(TAG, "Retrying task with id: " + id(task));
         }

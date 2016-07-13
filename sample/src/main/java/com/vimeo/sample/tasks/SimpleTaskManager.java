@@ -6,40 +6,40 @@ import com.vimeo.taskqueue.BaseTaskManager;
 import com.vimeo.taskqueue.BaseTaskService;
 import com.vimeo.taskqueue.TaskManagerBuilder;
 
-public class SampleTaskManager extends BaseTaskManager<SampleTask> {
+public class SimpleTaskManager extends BaseTaskManager<SimpleTask> {
 
-    private static SampleTaskManager sInstance;
+    private static SimpleTaskManager sInstance;
 
-    public synchronized static SampleTaskManager getInstance() {
+    public synchronized static SimpleTaskManager getInstance() {
         if (sInstance == null) {
             throw new IllegalStateException("Must be initialized first");
         }
         return sInstance;
     }
 
-    public static void initialize(TaskManagerBuilder<SampleTask> taskManagerBuilder) {
-        sInstance = new SampleTaskManager(taskManagerBuilder);
+    public static void initialize(TaskManagerBuilder<SimpleTask> taskManagerBuilder) {
+        sInstance = new SimpleTaskManager(taskManagerBuilder);
     }
 
-    protected SampleTaskManager(@NonNull TaskManagerBuilder<SampleTask> taskManagerBuilder) {
+    protected SimpleTaskManager(@NonNull TaskManagerBuilder<SimpleTask> taskManagerBuilder) {
         super(taskManagerBuilder);
     }
 
     @Override
     protected Class<? extends BaseTaskService> getServiceClass() {
-        return SampleTaskService.class;
+        return SimpleTaskService.class;
     }
 
     @NonNull
     @Override
     protected String getManagerName() {
-        return "SampleTaskManager";
+        return "SimpleTaskManager";
     }
 
     @NonNull
     @Override
-    protected Class<SampleTask> getTaskClass() {
-        return SampleTask.class;
+    protected Class<SimpleTask> getTaskClass() {
+        return SimpleTask.class;
     }
 
 }

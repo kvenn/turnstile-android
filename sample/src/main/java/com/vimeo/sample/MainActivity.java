@@ -11,15 +11,15 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.vimeo.sample.tasks.SampleTask;
-import com.vimeo.sample.tasks.SampleTaskManager;
+import com.vimeo.sample.tasks.SimpleTask;
+import com.vimeo.sample.tasks.SimpleTaskManager;
 import com.vimeo.taskqueue.TaskConstants;
 import com.vimeo.taskqueue.database.TaskCallback;
 
 public class MainActivity extends AppCompatActivity {
 
 
-    private SampleTaskManager mTaskManager;
+    private SimpleTaskManager mTaskManager;
     private TaskIdGenerator mTaskIdGenerator = new TaskIdGenerator();
     private TextView mResultText;
 
@@ -28,9 +28,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (getIntent() != null && App.NOTIFICATION_INTENT_KEY.equals(getIntent().getAction())) {
+            Toast.makeText(this, R.string.notification_click, Toast.LENGTH_LONG).show();
+        }
+
         mResultText = (TextView) findViewById(R.id.text_view_task_result);
 
-        mTaskManager = SampleTaskManager.getInstance();
+        mTaskManager = SimpleTaskManager.getInstance();
         mTaskManager.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -52,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_new_task).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                final SampleTask task = new SampleTask(mTaskIdGenerator.getId());
+                final SimpleTask task = new SimpleTask(mTaskIdGenerator.getId());
                 mTaskManager.addTask(task, new TaskCallback() {
                     @Override
                     public void onSuccess() {

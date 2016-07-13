@@ -4,42 +4,37 @@ import android.util.Log;
 
 import com.vimeo.taskqueue.BaseTask;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class SampleTask extends BaseTask {
-
-
-    private final String TAG;
+public class SimpleTask extends BaseTask {
 
     private static final long serialVersionUID = -2959689752810794783L;
 
-    private static final Random sRandom = new Random(System.currentTimeMillis());
+    private final String TAG;
 
-    public SampleTask(String id) {
+    public SimpleTask(String id) {
         super(id);
-        TAG = "SampleTask - " + id;
+        TAG = "SimpleTask - " + id;
     }
 
-    public SampleTask(String id, TaskState taskState, long createdTimeMillis) {
+    public SimpleTask(String id, TaskState taskState, long createdTimeMillis) {
         super(id, taskState, createdTimeMillis);
-        TAG = "SampleTask - " + id;
+        TAG = "SimpleTask - " + id;
     }
-
 
     @Override
     protected void execute() {
-        mState = TaskState.READY;
         Log.d(TAG, "Starting task");
+        onTaskProgress(0);
         long time = System.nanoTime();
         long timeCheck = System.nanoTime();
-        Log.d(TAG, "" + TimeUnit.NANOSECONDS.toSeconds(timeCheck - time));
         while (TimeUnit.NANOSECONDS.toSeconds(timeCheck - time) < 3) {
             timeCheck = System.nanoTime();
         }
 
         Log.d(TAG, "Finishing task");
-        mState = TaskState.COMPLETE;
+        onTaskProgress(100);
+        onTaskCompleted();
     }
 
 }

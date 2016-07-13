@@ -1,9 +1,10 @@
 package com.vimeo.sample.tasks;
 
+import com.vimeo.sample.R;
 import com.vimeo.taskqueue.BaseTaskManager;
 import com.vimeo.taskqueue.BaseTaskService;
 
-public class SampleTaskService extends BaseTaskService<SampleTask> {
+public class SimpleTaskService extends BaseTaskService<SimpleTask> {
 
     @Override
     protected void handleAdditionalEvents(String event) {
@@ -11,8 +12,8 @@ public class SampleTaskService extends BaseTaskService<SampleTask> {
     }
 
     @Override
-    protected BaseTaskManager<SampleTask> getManagerInstance() {
-        return SampleTaskManager.getInstance();
+    protected BaseTaskManager<SimpleTask> getManagerInstance() {
+        return SimpleTaskManager.getInstance();
     }
 
     @Override
@@ -27,26 +28,26 @@ public class SampleTaskService extends BaseTaskService<SampleTask> {
 
     @Override
     protected int getProgressNotificationTitleStringRes() {
-        return 0;
+        return R.plurals.task_in_progress;
     }
 
     @Override
     protected int getFinishedNotificationTitleStringRes() {
-        return 0;
+        return R.string.task_completed;
     }
 
     @Override
     protected int getNetworkNotificationMessageStringRes() {
-        return 0;
+        return R.string.network_problems;
     }
 
     @Override
     protected int getProgressIconDrawable() {
-        return 0;
+        return R.mipmap.ic_launcher;
     }
 
     @Override
     protected int getFinishedIconDrawable() {
-        return 0;
+        return R.mipmap.ic_launcher;
     }
 }

@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">Sample</string>
-    <string name="notification_click">Notification Clicked!</string>
+    <string name="notification_click">Notification clicked!</string>
     <string name="started_text">Added task, id: %1$s</string>
     <string name="result_text">Task completed, id: %1$s</string>
     <string name="failure_text">Failed to add task, id: %1$s</string>
+    <plurals name="task_in_progress">
+        <item quantity="one">Task in progress</item>
+        <item quantity="other">Tasks in progress</item>
+    </plurals>
+    <string name="network_problems">Unable to run task due to network conditions</string>
+    <string name="task_completed">Task completed</string>
 </resources>

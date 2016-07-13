@@ -4,9 +4,9 @@ import android.content.Context;
 
 import com.vimeo.taskqueue.connectivity.NetworkUtil;
 
-public class SampleNetworkUtil extends NetworkUtil {
+public class SimpleNetworkUtil extends NetworkUtil {
 
-    public SampleNetworkUtil(Context context) {
+    public SimpleNetworkUtil(Context context) {
         super(context);
     }
 

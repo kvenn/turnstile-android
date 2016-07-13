@@ -3,10 +3,10 @@ package com.vimeo.sample;
 import android.app.Application;
 import android.content.Intent;
 
-import com.vimeo.sample.tasks.SampleLoggingInterface;
-import com.vimeo.sample.tasks.SampleNetworkUtil;
-import com.vimeo.sample.tasks.SampleTask;
-import com.vimeo.sample.tasks.SampleTaskManager;
+import com.vimeo.sample.tasks.SimpleLoggingInterface;
+import com.vimeo.sample.tasks.SimpleNetworkUtil;
+import com.vimeo.sample.tasks.SimpleTask;
+import com.vimeo.sample.tasks.SimpleTaskManager;
 import com.vimeo.taskqueue.TaskManagerBuilder;
 
 public class App extends Application {
@@ -17,15 +17,16 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        TaskManagerBuilder<SampleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
-        taskTaskManagerBuilder.setLoggingInterface(new SampleLoggingInterface());
-        taskTaskManagerBuilder.setNetworkUtil(new SampleNetworkUtil(this));
+        TaskManagerBuilder<SimpleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
+        taskTaskManagerBuilder.setLoggingInterface(new SimpleLoggingInterface());
+        taskTaskManagerBuilder.setNetworkUtil(new SimpleNetworkUtil(this));
 
         Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.setAction(NOTIFICATION_INTENT_KEY);
 
         taskTaskManagerBuilder.setNotificationIntent(intent);
 
-        SampleTaskManager.initialize(taskTaskManagerBuilder);
+        SimpleTaskManager.initialize(taskTaskManagerBuilder);
     }
 }
