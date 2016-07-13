@@ -1,5 +1,5 @@
 <manifest
-    package="com.vimeo.taskqueue"
+    package="com.vimeo.turnstile"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Start Upload Service on Boot -->
@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:supportsRtl="false">
 
-        <receiver android:name="com.vimeo.taskqueue.BootReceiver">
+        <receiver android:name="com.vimeo.turnstile.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
