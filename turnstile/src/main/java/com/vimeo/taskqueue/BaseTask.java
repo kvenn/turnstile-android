@@ -214,6 +214,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * It isn't set to null when it is executing again - so you can't rely on this having a null value.
      */
     @SerializedName("error")
+    @Nullable
     protected TaskError mError;
 
     /**
@@ -294,6 +295,12 @@ public abstract class BaseTask implements Serializable, Callable {
         return null;
     }
 
+    /**
+     * Determines whether or not the execute method of the
+     * task is currently running.
+     *
+     * @return true if the task is running, false otherwise.
+     */
     public boolean isRunning() {
         return mIsRunning;
     }
@@ -341,12 +348,22 @@ public abstract class BaseTask implements Serializable, Callable {
         }
     }
 
+    /**
+     * Notify listeners that the task has changed state. Should
+     * be called by the implementation of the BaseTask when it
+     * changes its state.
+     */
     protected void onTaskChange() {
         if (mStateListener != null) {
             mStateListener.notifyTaskStateChange(this);
         }
     }
 
+    /**
+     * Notify listeners that the task has been completed. Should
+     * be called by the implementation of the BaseTask after it
+     * finishes executing.
+     */
     protected void onTaskCompleted() {
         mState = TaskState.COMPLETE;
         if (mStateListener != null) {
@@ -354,6 +371,13 @@ public abstract class BaseTask implements Serializable, Callable {
         }
     }
 
+    /**
+     * Notify listeners that the progress of the task has changed.
+     * Should be called by the implementation of the BaseTask
+     * whenever the progress changes.
+     *
+     * @param progress The progress, between 0 and 100 of the task.
+     */
     protected void onTaskProgress(int progress) {
         mProgress = progress;
         if (mStateListener != null) {
@@ -361,7 +385,15 @@ public abstract class BaseTask implements Serializable, Callable {
         }
     }
 
-    protected void onTaskFailure(TaskError error) {
+    /**
+     * Notify listeners that the task has run into an error.
+     * Should be called by the implementation of the BaseTask
+     * when an error occurs.
+     *
+     * @param error the error that occurred and should be
+     *              propagated to listeners.
+     */
+    protected void onTaskFailure(@NonNull TaskError error) {
         mState = TaskState.ERROR;
         mError = error;
         if (mStateListener != null) {
@@ -379,26 +411,62 @@ public abstract class BaseTask implements Serializable, Callable {
         return mId;
     }
 
+    /**
+     * Returns whether or not the task state is complete.
+     *
+     * @return true if task state equals {@link TaskState#COMPLETE},
+     * false otherwise.
+     */
     public boolean isComplete() {
         return mState == TaskState.COMPLETE;
     }
 
+    /**
+     * Returns whether or not the task state is in error.
+     *
+     * @return true if task state equals {@link TaskState#ERROR},
+     * false otherwise.
+     */
     public boolean isError() {
         return mState == TaskState.ERROR;
     }
 
+    /**
+     * Returns whether or not the task state is ready to execute.
+     *
+     * @return true if task state equals {@link TaskState#READY},
+     * false otherwise.
+     */
     public boolean isReady() {
         return mState == TaskState.READY;
     }
 
+    /**
+     * The error that the task ran into, may be null.
+     *
+     * @return the error, nullable.
+     */
+    @Nullable
     public TaskError getTaskError() {
         return mError;
     }
 
+    /**
+     * Gets the current task state.
+     *
+     * @return the task state, non null.
+     */
+    @NonNull
     public TaskState getTaskState() {
         return mState;
     }
 
+    /**
+     * The time in milliseconds that the task was created.
+     *
+     * @return returns the time in milliseconds that the
+     * task was created.
+     */
     public long getCreatedTimeMillis() {
         return mCreatedTimeMillis;
     }
