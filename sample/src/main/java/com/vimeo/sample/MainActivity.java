@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private SimpleTaskManager mTaskManager;
-    private TaskIdGenerator mTaskIdGenerator = new TaskIdGenerator();
+    private static final TaskIdGenerator sTaskIdGenerator = new TaskIdGenerator();
     private TextView mResultText;
 
     @Override
@@ -34,10 +34,13 @@ public class MainActivity extends AppCompatActivity {
 
         mResultText = (TextView) findViewById(R.id.text_view_task_result);
 
+        final TextView cacheView = (TextView) findViewById(R.id.text_view_cache);
+
         mTaskManager = SimpleTaskManager.getInstance();
         mTaskManager.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
                 String event = intent.getStringExtra(TaskConstants.TASK_EVENT);
                 switch (event) {
                     case TaskConstants.EVENT_SUCCESS:
@@ -52,11 +55,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
+
         //noinspection ConstantConditions
         findViewById(R.id.button_new_task).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                final SimpleTask task = new SimpleTask(mTaskIdGenerator.getId());
+                final SimpleTask task = new SimpleTask(sTaskIdGenerator.getId());
                 mTaskManager.addTask(task, new TaskCallback() {
                     @Override
                     public void onSuccess() {
