@@ -18,11 +18,15 @@ public class SimpleTaskService extends BaseTaskService<SimpleTask> {
 
     @Override
     protected int getProgressNotificationId() {
+        // If we don't use separate ids for progress and finished,
+        // then the notifications will erase each other.
         return 1;
     }
 
     @Override
     protected int getFinishedNotificationId() {
+        // If we don't use separate ids for progress and finished,
+        // then the notifications will erase each other.
         return 2;
     }
 
