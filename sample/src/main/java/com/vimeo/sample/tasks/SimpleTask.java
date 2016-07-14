@@ -2,7 +2,7 @@ package com.vimeo.sample.tasks;
 
 import android.util.Log;
 
-import com.vimeo.taskqueue.BaseTask;
+import com.vimeo.turnstile.BaseTask;
 
 import java.util.concurrent.TimeUnit;
 

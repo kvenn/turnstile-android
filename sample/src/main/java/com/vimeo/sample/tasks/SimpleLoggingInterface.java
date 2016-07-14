@@ -5,8 +5,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.vimeo.sample.BuildConfig;
-import com.vimeo.taskqueue.LoggingInterface;
-import com.vimeo.taskqueue.models.TaskError;
+import com.vimeo.turnstile.LoggingInterface;
+import com.vimeo.turnstile.models.TaskError;
 
 public class SimpleLoggingInterface implements LoggingInterface<SimpleTask> {
 

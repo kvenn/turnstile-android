@@ -1,8 +1,8 @@
 package com.vimeo.sample.tasks;
 
 import com.vimeo.sample.R;
-import com.vimeo.taskqueue.BaseTaskManager;
-import com.vimeo.taskqueue.BaseTaskService;
+import com.vimeo.turnstile.BaseTaskManager;
+import com.vimeo.turnstile.BaseTaskService;
 
 public class SimpleTaskService extends BaseTaskService<SimpleTask> {
 

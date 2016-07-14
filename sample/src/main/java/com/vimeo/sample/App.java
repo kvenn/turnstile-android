@@ -7,7 +7,7 @@ import com.vimeo.sample.tasks.SimpleLoggingInterface;
 import com.vimeo.sample.tasks.SimpleNetworkUtil;
 import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
-import com.vimeo.taskqueue.TaskManagerBuilder;
+import com.vimeo.turnstile.TaskManagerBuilder;
 
 public class App extends Application {
 

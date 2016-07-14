@@ -2,9 +2,9 @@ package com.vimeo.sample.tasks;
 
 import android.support.annotation.NonNull;
 
-import com.vimeo.taskqueue.BaseTaskManager;
-import com.vimeo.taskqueue.BaseTaskService;
-import com.vimeo.taskqueue.TaskManagerBuilder;
+import com.vimeo.turnstile.BaseTaskManager;
+import com.vimeo.turnstile.BaseTaskService;
+import com.vimeo.turnstile.TaskManagerBuilder;
 
 public class SimpleTaskManager extends BaseTaskManager<SimpleTask> {
 

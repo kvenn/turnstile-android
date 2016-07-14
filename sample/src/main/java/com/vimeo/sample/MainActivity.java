@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
-import com.vimeo.taskqueue.TaskConstants;
-import com.vimeo.taskqueue.database.TaskCallback;
+import com.vimeo.turnstile.TaskConstants;
+import com.vimeo.turnstile.database.TaskCallback;
 
 public class MainActivity extends AppCompatActivity {
 

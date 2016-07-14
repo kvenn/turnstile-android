@@ -2,7 +2,7 @@ package com.vimeo.sample.tasks;
 
 import android.content.Context;
 
-import com.vimeo.taskqueue.connectivity.NetworkUtil;
+import com.vimeo.turnstile.connectivity.NetworkUtil;
 
 public class SimpleNetworkUtil extends NetworkUtil {
 
