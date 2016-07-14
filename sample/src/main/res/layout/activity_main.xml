@@ -16,7 +16,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="New Task"/>
+        android:text="@string/new_task"/>
+
+    <Button
+        android:id="@+id/button_clear_tasks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/clear_all_tasks"/>
 
     <TextView
         android:id="@+id/text_view_cache"

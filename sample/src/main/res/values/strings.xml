@@ -11,4 +11,6 @@
     <string name="network_problems">Unable to run task due to network conditions</string>
     <string name="task_completed">Task completed</string>
     <string name="tasks_in_cache">%1$d tasks in cache</string>
+    <string name="new_task">New Task</string>
+    <string name="clear_all_tasks">Cancel All Tasks</string>
 </resources>

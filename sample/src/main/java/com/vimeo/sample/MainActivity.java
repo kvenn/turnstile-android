@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         mTaskManager.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                //noinspection ConstantConditions
                 cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
                 String event = intent.getStringExtra(TaskConstants.TASK_EVENT);
                 switch (event) {
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //noinspection ConstantConditions
         cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
 
         //noinspection ConstantConditions
@@ -73,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
                         addTextLog(getString(R.string.failure_text, task.getId()));
                     }
                 });
+            }
+        });
+
+        //noinspection ConstantConditions
+        findViewById(R.id.button_clear_tasks).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTaskManager.cancelAll();
             }
         });
     }
