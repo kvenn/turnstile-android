@@ -26,10 +26,20 @@ public class SimpleTask extends BaseTask {
     protected void execute() {
         Log.d(TAG, "Starting task");
         onTaskProgress(0);
-        long time = System.nanoTime();
-        long timeCheck = System.nanoTime();
-        while (TimeUnit.NANOSECONDS.toSeconds(timeCheck - time) < 3) {
-            timeCheck = System.nanoTime();
+
+        try {
+            // Sleep for 5 seconds to simulate work being done
+            Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+            onTaskProgress(20);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+            onTaskProgress(40);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+            onTaskProgress(60);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+            onTaskProgress(80);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         Log.d(TAG, "Finishing task");
