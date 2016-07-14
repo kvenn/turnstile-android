@@ -21,36 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.connectivity;
+package com.vimeo.turnstile.conditions.network;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
-import com.vimeo.turnstile.BaseTaskManager;
 
 /**
- * An interface that NetworkUtil can implement if it supports a callback
- * method when network state is changed. This is not mandatory but highly
- * suggested so that implementations of {@link BaseTaskManager} can avoid
- * busy loops when there is a job waiting for network and there is no
- * network available.
+ * Default implementation for network conditions to observe network
+ * events {@link #isConnected()} will return true if there is any
+ * network (wifi, data, etc.)
  * <p/>
- * This is taken from the android-priority-jobqueue framework
- *
- * @see <a href="https://github.com/yigit/android-priority-jobqueue">android-priority-jobqueue</a>
+ * Created by kylevenn on 9/8/2015
  */
-public interface NetworkEventProvider {
+@SuppressWarnings("unused")
+public final class NetworkConditionsBasic extends NetworkConditions {
 
-    void setListener(Listener listener);
-
-    interface Listener {
-
-        /**
-         * Called when the network connection status changes.
-         * can be as simple as having an internet connection
-         * or can also be customized (e.g. if your servers are down).
-         *
-         * @param isConnected true if there the network is
-         *                    connected, false otherwise.
-         */
-        void onNetworkChange(boolean isConnected);
+    public NetworkConditionsBasic(Context context) {
+        super(context);
     }
+
+    @Override
+    protected boolean isConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
 }

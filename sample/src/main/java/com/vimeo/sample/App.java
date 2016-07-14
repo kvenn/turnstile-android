@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Intent;
 
 import com.vimeo.sample.tasks.SimpleLoggingInterface;
-import com.vimeo.sample.tasks.SimpleNetworkUtil;
+import com.vimeo.sample.tasks.SimpleConditions;
 import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
 import com.vimeo.turnstile.TaskManagerBuilder;
@@ -19,7 +19,7 @@ public class App extends Application {
 
         TaskManagerBuilder<SimpleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
         taskTaskManagerBuilder.setLoggingInterface(new SimpleLoggingInterface());
-        taskTaskManagerBuilder.setNetworkUtil(new SimpleNetworkUtil(this));
+        taskTaskManagerBuilder.setConditions(new SimpleConditions(this));
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);

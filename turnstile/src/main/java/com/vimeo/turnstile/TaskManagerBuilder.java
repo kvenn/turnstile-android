@@ -27,8 +27,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
-import com.vimeo.turnstile.connectivity.NetworkUtil;
-import com.vimeo.turnstile.connectivity.NetworkUtilExtended;
+import com.vimeo.turnstile.conditions.Conditions;
+import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
 
 /**
  * A class used to pass variables to the
@@ -42,18 +42,18 @@ import com.vimeo.turnstile.connectivity.NetworkUtilExtended;
 public class TaskManagerBuilder<T extends BaseTask> {
 
     /* package */ final Context mContext;
-    /* package */ NetworkUtil mNetworkUtil;
+    /* package */ Conditions mConditions;
     /* package */ Intent mNotificationIntent;
     /* package */ LoggingInterface<T> mLoggingInterface;
 
     public TaskManagerBuilder(@NonNull Context context) {
         mContext = context;
         // Set the default to be the extended network util
-        mNetworkUtil = new NetworkUtilExtended(mContext);
+        mConditions = new NetworkConditionsExtended(mContext);
     }
 
-    public TaskManagerBuilder<T> setNetworkUtil(NetworkUtil networkUtil) {
-        mNetworkUtil = networkUtil;
+    public TaskManagerBuilder<T> setConditions(Conditions conditions) {
+        mConditions = conditions;
         return this;
     }
 

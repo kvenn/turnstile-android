@@ -30,7 +30,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import com.google.gson.annotations.SerializedName;
-import com.vimeo.turnstile.connectivity.NetworkUtil;
+import com.vimeo.turnstile.conditions.Conditions;
 import com.vimeo.turnstile.models.TaskError;
 
 import java.io.Serializable;
@@ -175,7 +175,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * An optional network util for network related tasks
      */
     @Nullable
-    protected transient NetworkUtil mNetworkUtil;
+    protected transient Conditions mConditions;
 
     /**
      * This marks the number of retries this task has attempted - this is to possibly rebind if there
@@ -318,8 +318,8 @@ public abstract class BaseTask implements Serializable, Callable {
         mStateListener = stateListener;
     }
 
-    public void setNetworkUtil(@Nullable NetworkUtil networkUtil) {
-        mNetworkUtil = networkUtil;
+    public void setConditions(@Nullable Conditions conditions) {
+        mConditions = conditions;
     }
 
     /**
