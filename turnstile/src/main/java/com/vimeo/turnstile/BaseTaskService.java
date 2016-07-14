@@ -155,24 +155,78 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
 
     protected abstract BaseTaskManager<T> getManagerInstance();
 
-    protected abstract int getProgressNotificationId();
+    // -----------------------------------------------------------------------------------------------------
+    // Finished Notification
+    // -----------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Finished Notification">
 
+    /**
+     * The id for the notification of completion. Must not
+     * be zero if you wish to show the notification correctly.
+     *
+     * @return the id of the notification.
+     */
     protected abstract int getFinishedNotificationId();
 
-    @PluralsRes
-    protected abstract int getProgressNotificationTitleStringRes();
-
+    /**
+     * The title of the completed task notification.
+     *
+     * @return the string resource for the completed task notification.
+     */
     @StringRes
     protected abstract int getFinishedNotificationTitleStringRes();
 
+    /**
+     * The icon for the finished task notification.
+     *
+     * @return the id of the drawable to use for the finished notification.
+     */
+    @DrawableRes
+    protected abstract int getFinishedIconDrawable();
+
+    // </editor-fold>
+
+    /**
+     * The title of the notification when the device conditions (e.g.
+     * network) are not suitable to complete the task.
+     *
+     * @return the string resource for the device condition notification.
+     */
     @StringRes
     protected abstract int getNetworkNotificationMessageStringRes();
 
+    // -----------------------------------------------------------------------------------------------------
+    // Progress Notification
+    // -----------------------------------------------------------------------------------------------------
+    // <editor-fold desc="Progress Notification">
+
+    /**
+     * The id for the notification of progress. Must not
+     * be zero if you wish to show the notification correctly.
+     *
+     * @return the id of the notification.
+     */
+    protected abstract int getProgressNotificationId();
+
+    /**
+     * The title of the progress notification. This title will
+     * be used in conjunction with the number of tasks. An example
+     * string would be "X tasks are running" or "one task running."
+     *
+     * @return the plural string resource for the progress notification.
+     */
+    @PluralsRes
+    protected abstract int getProgressNotificationTitleStringRes();
+
+    /**
+     * The icon for the progress notification.
+     *
+     * @return the id of the drawable to use for the progress notification.
+     */
     @DrawableRes
     protected abstract int getProgressIconDrawable();
+    // </editor-fold>
 
-    @DrawableRes
-    protected abstract int getFinishedIconDrawable();
     // </editor-fold>
 
     /*
