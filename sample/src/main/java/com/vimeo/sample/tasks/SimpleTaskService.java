@@ -18,12 +18,12 @@ public class SimpleTaskService extends BaseTaskService<SimpleTask> {
 
     @Override
     protected int getProgressNotificationId() {
-        return 0;
+        return 1;
     }
 
     @Override
     protected int getFinishedNotificationId() {
-        return 0;
+        return 2;
     }
 
     @Override
