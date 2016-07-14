@@ -52,17 +52,17 @@ public class TaskManagerBuilder<T extends BaseTask> {
         mConditions = new NetworkConditionsExtended(mContext);
     }
 
-    public TaskManagerBuilder<T> setConditions(Conditions conditions) {
+    public TaskManagerBuilder<T> withConditions(Conditions conditions) {
         mConditions = conditions;
         return this;
     }
 
-    public TaskManagerBuilder<T> setNotificationIntent(Intent notificationIntent) {
+    public TaskManagerBuilder<T> withNotificationIntent(Intent notificationIntent) {
         mNotificationIntent = notificationIntent;
         return this;
     }
 
-    public TaskManagerBuilder<T> setLoggingInterface(LoggingInterface<T> loggingInterface) {
+    public TaskManagerBuilder<T> withLoggingInterface(LoggingInterface<T> loggingInterface) {
         mLoggingInterface = loggingInterface;
         return this;
     }

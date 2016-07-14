@@ -18,14 +18,14 @@ public class App extends Application {
         super.onCreate();
 
         TaskManagerBuilder<SimpleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
-        taskTaskManagerBuilder.setLoggingInterface(new SimpleLoggingInterface());
-        taskTaskManagerBuilder.setConditions(new SimpleConditions());
+        taskTaskManagerBuilder.withLoggingInterface(new SimpleLoggingInterface());
+        taskTaskManagerBuilder.withConditions(new SimpleConditions());
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.setAction(NOTIFICATION_INTENT_KEY);
 
-        taskTaskManagerBuilder.setNotificationIntent(intent);
+        taskTaskManagerBuilder.withNotificationIntent(intent);
 
         SimpleTaskManager.initialize(taskTaskManagerBuilder);
     }
