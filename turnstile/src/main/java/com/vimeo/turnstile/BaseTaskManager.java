@@ -30,6 +30,7 @@ import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 
 import com.vimeo.turnstile.BaseTask.TaskStateListener;
 import com.vimeo.turnstile.async.NamedThreadFactory;
@@ -98,10 +99,12 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     // <editor-fold desc="Builder Fields">
     @NonNull
     private final Conditions mConditions;
+
     @Nullable
     private final LoggingInterface<T> mLoggingInterface;
-    @Nullable
+
     // This could also do it by broadcast and have the app's receiver decide where to go 2/9/16 [KV]
+    @Nullable
     private final Intent mNotificationIntent;
 
     @Nullable
@@ -227,7 +230,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         }
 
         @Override
-        public void onTaskFailure(@NonNull T task, TaskError taskError) {
+        public void onTaskFailure(@NonNull T task, @NonNull TaskError taskError) {
             logFailure(task, taskError);
             mTaskCache.upsert(task);
 
@@ -352,8 +355,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
     // Eventually with failure states we can call this with isResume = false to start over
     private void addTask(@NonNull T task, boolean isResume) {
-        if (task.getId() == null) {
-            TaskLogger.e("Task with a null ID passed to addTask. Will not add it.");
+        if (TextUtils.isEmpty(task.getId())) {
+            TaskLogger.e("Task with an empty ID passed to addTask. Will not add it.");
             return;
         }
 

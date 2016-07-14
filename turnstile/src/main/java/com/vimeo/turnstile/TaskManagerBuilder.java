@@ -26,6 +26,7 @@ package com.vimeo.turnstile;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.vimeo.turnstile.conditions.Conditions;
 import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
@@ -41,10 +42,14 @@ import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
 @SuppressWarnings("unused")
 public class TaskManagerBuilder<T extends BaseTask> {
 
-    /* package */ final Context mContext;
-    /* package */ Conditions mConditions;
-    /* package */ Intent mNotificationIntent;
-    /* package */ LoggingInterface<T> mLoggingInterface;
+    @NonNull
+    final Context mContext;
+    @NonNull
+    Conditions mConditions;
+    @Nullable
+    Intent mNotificationIntent;
+    @Nullable
+    LoggingInterface<T> mLoggingInterface;
 
     public TaskManagerBuilder(@NonNull Context context) {
         mContext = context;
@@ -52,17 +57,17 @@ public class TaskManagerBuilder<T extends BaseTask> {
         mConditions = new NetworkConditionsExtended(mContext);
     }
 
-    public TaskManagerBuilder<T> withConditions(Conditions conditions) {
+    public TaskManagerBuilder<T> withConditions(@NonNull Conditions conditions) {
         mConditions = conditions;
         return this;
     }
 
-    public TaskManagerBuilder<T> withNotificationIntent(Intent notificationIntent) {
+    public TaskManagerBuilder<T> withNotificationIntent(@Nullable Intent notificationIntent) {
         mNotificationIntent = notificationIntent;
         return this;
     }
 
-    public TaskManagerBuilder<T> withLoggingInterface(LoggingInterface<T> loggingInterface) {
+    public TaskManagerBuilder<T> withLoggingInterface(@Nullable LoggingInterface<T> loggingInterface) {
         mLoggingInterface = loggingInterface;
         return this;
     }

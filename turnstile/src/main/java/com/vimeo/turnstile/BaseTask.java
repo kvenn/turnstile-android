@@ -84,7 +84,7 @@ public abstract class BaseTask implements Serializable, Callable {
 
         abstract void onTaskProgress(@NonNull T task, int progress);
 
-        abstract void onTaskFailure(@NonNull T task, TaskError taskError);
+        abstract void onTaskFailure(@NonNull T task, @NonNull TaskError taskError);
 
         public final void notifyTaskStateChange(@NonNull BaseTask task) {
             T safeTask = getFrom(task);
@@ -107,7 +107,7 @@ public abstract class BaseTask implements Serializable, Callable {
             }
         }
 
-        public final void notifyOnTaskFailure(@NonNull BaseTask task, TaskError taskError) {
+        public final void notifyOnTaskFailure(@NonNull BaseTask task, @NonNull TaskError taskError) {
             T safeTask = getFrom(task);
             if (safeTask != null) {
                 onTaskFailure(safeTask, taskError);
