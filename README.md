@@ -4,12 +4,12 @@ turnstile is an abstract task queue which allows for long running, parallel task
 ## Contents
 * [Features](#features)
 * [Why Write Another Task Queue?](#why)
+* [Other Library Options](#alternatives)
+* [Use Cases](#use-cases)
 * [Getting Started](#getting-started)
     - [Gradle](#gradle)
     - [Submodule](#submodule)
 * TODO: Put in a section going over the example
-* [Use Cases](#use-cases)
-* [Alternatives](#alternatives)
 * [Contact Us](#contact-us)
     - [Found an Issue?](#found-an-issue)
     - [Want to Contribute?](#want-to-contribute)
@@ -29,6 +29,27 @@ turnstile is an abstract task queue which allows for long running, parallel task
 
 ## Why?
 Although there are many phenomenal task queue libraries that exist for Android, we created this one to accommodate a broader requirement. While implementing upload and download for Vimeo, we found we needed more control over the state of our tasks which other libraries couldn't accommodate. There are many common [features](#features) that every task queue will have, but you may still want the flexibilty to determine how, why, and when your tasks are run. This library provides that flexibility while removing a majority of the boilerplate. It's easy to use for a simple case and extensible for a more custom [use case](#use-cases).
+
+## Other Library Options
+If you don't think you'll benefit from the customizability of this library, there are other options that each provide different advantages (this list is not exhaustive).
+
+* android-priority-jobqueue
+    - Pros: Most of the [features above](#features). Additionally has prioritization of jobs, job delay, load balancing, and grouping
+    - Cons: Doesn't run in a Service (dies with your application). It's difficult to extend or customize.
+* tape
+    - Pros: Most of the [features above](#features). Very easy to implement for simple tasks.
+    - Cons: No progress broadcasting or awareness of network. It's difficult to extend or customize.
+* robospice
+    - Pros: Good for long running network requests.
+    - Cons: It's difficult to extend or customize. It also has a limited feature set.
+
+## Use Cases
+* Upload/download
+* Image/video processing
+* Batching important network requests when offline
+    - Analytics
+    - Messaging applications
+* Long running background server syncing
 
 ## Getting Started
 For a more in depth look at the usage, refer to the [example Android app](example). The example project includes implementation of all of the below features.
@@ -51,28 +72,6 @@ compile project(':turnstile-android:turnstile')
 
 ## TODO: Section going over example
 Cover utilization of each feature as well as initialization. Reference the code in the example for ease of understanding.
-
-## Use Cases
-* Upload/download
-* Image/video processing
-* Batching important network requests when offline
-    - Analytics
-    - Messaging applications
-* Long running background server syncing
-
-## Alternatives
-If you don't think you'll benefit from the customizability of this library, there are other options that each provide different advantages.
-
-TODO: maybe make a chart of features, a 1-5 ease to implement, and 1-5 for level of extensibility.
-
-#### android-priority-jobqueue
-A similar featureset as specified [above](#features) with the addition of prioritization of jobs, job delay, load balancing, and grouping. Since it doesn't run in a Service, it will die with your application. Additionally, it is difficult to extend or breach from the execution contract.
-
-#### tape
-A similar featureset as [above](#features) with the exception of progress broadcasting and any awareness of network. It is one of the easiest libraries to consume for simple tasks, but provides limited extensibility.
-
-#### robospice
-A library optimized for long running network requests. Limited extensibility.
 
 ## Contact US
 
