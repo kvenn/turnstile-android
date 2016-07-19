@@ -4,7 +4,7 @@ turnstile is an abstract task queue which allows for long running, parallel task
 ## Contents
 * [Features](#features)
 * [Why Write Another Task Queue?](#why)
-* [Other Library Options](#alternatives)
+    - [What Else Is Out There](#what-else-is-out-there)
 * [Use Cases](#use-cases)
 * [Getting Started](#getting-started)
     - [Gradle](#gradle)
@@ -17,20 +17,23 @@ turnstile is an abstract task queue which allows for long running, parallel task
 * [License](#license)
 
 ## Features
-* Long running background execution through a [Service](https://developer.android.com/reference/android/app/Service.html)
-    - Resume tasks after your app is killed or the device is shut off
+* Long running background task execution through a [Service](https://developer.android.com/reference/android/app/Service.html)
+    - Automatically resume tasks after your app is killed or the device is restarted
     - Highly customizable notification (optional)
 * Parallel processing
-    - Specify number of concurrent tasks 
+    - Ability to specify number of concurrent tasks
 * Disk backed task cache
 * Progress broadcasting
-* Automatically pauses and resumes for network tasks (optional)
-* Extremely extensible
+* Specify conditions necessary to run your task
+    - Ex. Automatically pause when network is lost and resume when network has returned
+* Customizable
 
 ## Why?
-Although there are many phenomenal task queue libraries that exist for Android, we created this one to accommodate a broader requirement. While implementing upload and download for Vimeo, we found we needed more control over the state of our tasks which other libraries couldn't accommodate. There are many common [features](#features) that every task queue will have, but you may still want the flexibilty to determine how, why, and when your tasks are run. This library provides that flexibility while removing a majority of the boilerplate. It's easy to use for a simple case and extensible for a more custom [use case](#use-cases).
+Although there are many phenomenal task queue libraries that exist for Android, we created this one to accommodate a broader set of requirements. While implementing upload and download for Vimeo, we found we needed more control over the state of our tasks which other libraries couldn't accommodate. For upload, we didn't want to persist the tasks to disk until the user hit a button, but we still wanted it to execute. For download, we wanted a customizable app drawer notification and the ability to store more objects with our task (like our concrete Video object). And for both queues, we wanted to support complex retry logic that allowed us to pick up where we left off so that if our upload or download was interrupted at 80%, it would be able to continue from that point without needing to start over.
 
-## Other Library Options
+There are many common [features](#features) that every task queue will have, but you may still want the flexibilty to determine how, why, and when your tasks are run. This library provides that flexibility while removing a majority of the boilerplate. It's easy to use for a simple case and extensible for a more custom [use case](#use-cases).
+
+### What Else Is Out There
 If you don't think you'll benefit from the customizability of this library, there are other options that each provide different advantages (this list is not exhaustive).
 
 * android-priority-jobqueue
