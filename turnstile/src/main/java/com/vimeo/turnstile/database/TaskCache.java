@@ -105,6 +105,14 @@ public final class TaskCache<T extends BaseTask> {
         return taskList;
     }
 
+    /**
+     * Gets all tasks held in the map and returns
+     * them in a list sorted by the time they were
+     * created, sorted oldest to newest.
+     *
+     * @return A non-null list tasks in the cache,
+     * sorted by date.
+     */
     @NonNull
     public List<T> getDateReverseOrderedTaskList() {
         List<T> taskList = new ArrayList<>(mTaskMap.values());
