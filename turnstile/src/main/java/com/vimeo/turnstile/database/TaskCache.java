@@ -60,6 +60,13 @@ public final class TaskCache<T extends BaseTask> {
             return Long.valueOf(rhs.getCreatedTimeMillis()).compareTo(lhs.getCreatedTimeMillis());
         }
     };
+    private final Comparator<T> mReverseTimeComparator = new Comparator<T>() {
+        @Override
+        public int compare(T lhs, T rhs) {
+            // Oldest to newest (lowest timestamp to highest timestamp)
+            return Long.valueOf(lhs.getCreatedTimeMillis()).compareTo(rhs.getCreatedTimeMillis());
+        }
+    };
 
     @WorkerThread
     public TaskCache(@NonNull TaskDatabase<T> database) {
@@ -95,6 +102,14 @@ public final class TaskCache<T extends BaseTask> {
         List<T> taskList = new ArrayList<>(mTaskMap.values());
 
         Collections.sort(taskList, mTimeComparator);
+        return taskList;
+    }
+
+    @NonNull
+    public List<T> getDateReverseOrderedTaskList() {
+        List<T> taskList = new ArrayList<>(mTaskMap.values());
+
+        Collections.sort(taskList, mReverseTimeComparator);
         return taskList;
     }
 
