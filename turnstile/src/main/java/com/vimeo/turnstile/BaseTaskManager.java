@@ -33,16 +33,17 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.vimeo.turnstile.BaseTask.TaskStateListener;
 import com.vimeo.turnstile.async.NamedThreadFactory;
-import com.vimeo.turnstile.database.TaskCallback;
 import com.vimeo.turnstile.connectivity.NetworkEventProvider;
 import com.vimeo.turnstile.connectivity.NetworkUtil;
 import com.vimeo.turnstile.connectivity.NetworkUtilExtended;
 import com.vimeo.turnstile.database.TaskCache;
+import com.vimeo.turnstile.database.TaskCallback;
 import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.models.TaskError;
 import com.vimeo.turnstile.preferences.BootPreferences;
 import com.vimeo.turnstile.preferences.TaskPreferences;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -264,6 +265,10 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
 
     public List<T> getDateReverseOrderedTaskList() {
         return mTaskCache.getDateReverseOrderedTaskList();
+    }
+
+    public List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
+        return mTaskCache.getOrderedTaskList(comparator);
     }
 
     /**

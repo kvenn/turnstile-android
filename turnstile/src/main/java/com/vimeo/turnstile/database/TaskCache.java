@@ -99,10 +99,7 @@ public final class TaskCache<T extends BaseTask> {
      */
     @NonNull
     public List<T> getDateOrderedTaskList() {
-        List<T> taskList = new ArrayList<>(mTaskMap.values());
-
-        Collections.sort(taskList, mTimeComparator);
-        return taskList;
+        return getOrderedTaskList(mTimeComparator);
     }
 
     /**
@@ -115,9 +112,22 @@ public final class TaskCache<T extends BaseTask> {
      */
     @NonNull
     public List<T> getDateReverseOrderedTaskList() {
+        return getOrderedTaskList(mReverseTimeComparator);
+    }
+
+    /**
+     * Gets all the tasks held in the map and returns them
+     * in a list sorted using the specified comparator.
+     *
+     * @param comparator a user-defined comparator to sort the tasks by
+     * @return A non-null list tasks in the cache,
+     * sorted by the specified comparator.
+     */
+    @NonNull
+    public List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
         List<T> taskList = new ArrayList<>(mTaskMap.values());
 
-        Collections.sort(taskList, mReverseTimeComparator);
+        Collections.sort(taskList, comparator);
         return taskList;
     }
 
