@@ -42,6 +42,7 @@ import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.models.TaskError;
 import com.vimeo.turnstile.preferences.BootPreferences;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -266,8 +267,19 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         return mTaskCache.getTasksToRun();
     }
 
+    @NonNull
     public final List<T> getDateOrderedTaskList() {
         return mTaskCache.getDateOrderedTaskList();
+    }
+
+    @NonNull
+    public final List<T> getDateReverseOrderedTaskList() {
+        return mTaskCache.getDateReverseOrderedTaskList();
+    }
+
+    @NonNull
+    public final List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
+        return mTaskCache.getOrderedTaskList(comparator);
     }
 
     /**

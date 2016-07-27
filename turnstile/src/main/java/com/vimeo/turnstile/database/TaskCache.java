@@ -57,9 +57,20 @@ public final class TaskCache<T extends BaseTask> {
         @Override
         public int compare(T lhs, T rhs) {
             // Newest to oldest (highest timestamp to lowest timestamp)
-            return Long.valueOf(rhs.getCreatedTimeMillis()).compareTo(lhs.getCreatedTimeMillis());
+            return compareLongs(rhs.getCreatedTimeMillis(), lhs.getCreatedTimeMillis());
         }
     };
+    private final Comparator<T> mReverseTimeComparator = new Comparator<T>() {
+        @Override
+        public int compare(T lhs, T rhs) {
+            // Oldest to newest (lowest timestamp to highest timestamp)
+            return compareLongs(lhs.getCreatedTimeMillis(), rhs.getCreatedTimeMillis());
+        }
+    };
+
+    private static int compareLongs(long lhs, long rhs) {
+        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
+    }
 
     @WorkerThread
     public TaskCache(@NonNull TaskDatabase<T> database) {
@@ -92,9 +103,35 @@ public final class TaskCache<T extends BaseTask> {
      */
     @NonNull
     public List<T> getDateOrderedTaskList() {
+        return getOrderedTaskList(mTimeComparator);
+    }
+
+    /**
+     * Gets all tasks held in the map and returns
+     * them in a list sorted by the time they were
+     * created, sorted oldest to newest.
+     *
+     * @return A non-null list tasks in the cache,
+     * sorted by date.
+     */
+    @NonNull
+    public List<T> getDateReverseOrderedTaskList() {
+        return getOrderedTaskList(mReverseTimeComparator);
+    }
+
+    /**
+     * Gets all the tasks held in the map and returns them
+     * in a list sorted using the specified comparator.
+     *
+     * @param comparator a user-defined comparator to sort the tasks by
+     * @return A non-null list tasks in the cache,
+     * sorted by the specified comparator.
+     */
+    @NonNull
+    public List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
         List<T> taskList = new ArrayList<>(mTaskMap.values());
 
-        Collections.sort(taskList, mTimeComparator);
+        Collections.sort(taskList, comparator);
         return taskList;
     }
 
