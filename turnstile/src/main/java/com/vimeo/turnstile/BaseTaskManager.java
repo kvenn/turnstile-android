@@ -259,14 +259,17 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
         return mTaskCache.getTasksToRun();
     }
 
+    @NonNull
     public List<T> getDateOrderedTaskList() {
         return mTaskCache.getDateOrderedTaskList();
     }
 
+    @NonNull
     public List<T> getDateReverseOrderedTaskList() {
         return mTaskCache.getDateReverseOrderedTaskList();
     }
 
+    @NonNull
     public List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
         return mTaskCache.getOrderedTaskList(comparator);
     }
