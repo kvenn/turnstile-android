@@ -36,8 +36,6 @@ import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.support.annotation.PluralsRes;
 import android.support.annotation.StringRes;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
 
 /**
  * The sole purpose of this {@link Service} is to ensure that our application
@@ -68,7 +66,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
 
     // ---- Notification Building ----
     private NotificationManager mNotificationManager;
-    private NotificationCompat.Builder mProgressNotificationBuilder;
+    private Notification.Builder mProgressNotificationBuilder;
     private boolean mNotificationShowing;
 
     // ---- Task Counts ----
@@ -84,7 +82,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
      */
     // <editor-fold desc="Lifecycle">
     @Override
-    public void onCreate() {
+    public final void onCreate() {
         super.onCreate();
         TaskLogger.d("Task Service onCreate");
         // The application will have already initialized the manager at this point 2/29/16 [KV]
@@ -108,7 +106,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     // Called when there's the possibility of a task running (any call to startService())
     // - BootReceived or TaskAdded
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public final int onStartCommand(Intent intent, int flags, int startId) {
         TaskLogger.d("Task Service onStartCommand");
 
         // TODO: This is going to get called A LOT because we issue startService commands for every added task as
@@ -132,14 +130,14 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     }
 
     @Override
-    public void onDestroy() {
+    public final void onDestroy() {
         stopForeground(true);
         unregisterReceivers();
     }
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
+    public final IBinder onBind(Intent intent) {
         // No one binds to this service
         return null;
     }
@@ -268,13 +266,12 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
      * Show a notification while this service is running.
      */
     protected void setupNotification() {
-        mProgressNotificationBuilder =
-                new NotificationCompat.Builder(this).setSmallIcon(getProgressIconDrawable())
-                        .setTicker(STARTED_STRING)
-                        .setProgress(100, 0, true)
-                        // Example: "Uploading video"
-                        .setContentTitle(getProgressNotificationString())
-                        .setContentText(getProgressContentText());
+        mProgressNotificationBuilder = new Notification.Builder(this).setSmallIcon(getProgressIconDrawable())
+                .setTicker(STARTED_STRING)
+                .setProgress(100, 0, true)
+                // Example: "Uploading video"
+                .setContentTitle(getProgressNotificationString())
+                .setContentText(getProgressContentText());
 
         setIntent(mProgressNotificationBuilder);
     }
@@ -317,7 +314,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
      * Shows an entirely separate notification
      */
     private void showNotificationFinish() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+        Notification.Builder builder = new Notification.Builder(this)
                 // Example: "Upload finished"
                 .setTicker(mFinishedNotificationTitleString)
                 .setContentTitle(mFinishedNotificationTitleString)
@@ -332,7 +329,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     }
 
     // ---- Helpers ----
-    private void setIntent(NotificationCompat.Builder builder) {
+    private void setIntent(Notification.Builder builder) {
         Intent intent = mTaskManager.getNotificationIntent();
         if (intent != null) {
             // The PendingIntent to launch our activity if the user selects this notification

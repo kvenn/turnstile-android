@@ -40,7 +40,7 @@ import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
  * @param <T> a type that extends {@link BaseTask}.
  */
 @SuppressWarnings("unused")
-public class TaskManagerBuilder<T extends BaseTask> {
+public final class TaskManagerBuilder<T extends BaseTask> {
 
     @NonNull
     final Context mContext;

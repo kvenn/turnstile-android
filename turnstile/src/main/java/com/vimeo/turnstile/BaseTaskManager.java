@@ -29,7 +29,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import com.vimeo.turnstile.BaseTask.TaskStateListener;
@@ -42,7 +41,6 @@ import com.vimeo.turnstile.database.TaskCallback;
 import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.models.TaskError;
 import com.vimeo.turnstile.preferences.BootPreferences;
-import com.vimeo.turnstile.preferences.TaskPreferences;
 
 import java.util.List;
 import java.util.Map;
@@ -207,6 +205,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     // <editor-fold desc="TaskStateListener Implementation">
     private final TaskStateListener<T> mTaskListener = new TaskStateListener<T>(getTaskClass()) {
         @Override
+        void onTaskStarted(@NonNull T task) {
+
+        }
+
+        @Override
         public void onTaskStateChange(@NonNull T task) {
             mTaskCache.upsert(task);
             // After a retry, lets make sure the service is running
@@ -249,21 +252,21 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      */
     // <editor-fold desc="Task Accessors">
     @Nullable
-    public T getTask(String taskId) {
+    public final T getTask(String taskId) {
         return mTaskCache.get(taskId);
     }
 
     @NonNull
-    public Map<String, T> getTasks() {
+    public final Map<String, T> getTasks() {
         return mTaskCache.getTasks();
     }
 
 
-    public List<T> getTasksToRun() {
+    public final List<T> getTasksToRun() {
         return mTaskCache.getTasksToRun();
     }
 
-    public List<T> getDateOrderedTaskList() {
+    public final List<T> getDateOrderedTaskList() {
         return mTaskCache.getDateOrderedTaskList();
     }
 
@@ -640,11 +643,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      */
     // <editor-fold desc="Network">
     @NonNull
-    public Conditions getConditions() {
+    public final Conditions getConditions() {
         return mConditions;
     }
 
-    public boolean areDeviceConditionsMet() {
+    public final boolean areDeviceConditionsMet() {
         return mConditions.areConditionsMet();
     }
 

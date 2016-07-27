@@ -24,6 +24,7 @@ public class SimpleTask extends BaseTask {
 
     @Override
     protected void execute() {
+        onTaskStarted();
         Log.d(TAG, "Starting task");
         onTaskProgress(0);
 

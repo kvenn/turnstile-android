@@ -78,6 +78,8 @@ public abstract class BaseTask implements Serializable, Callable {
             mClass = clazz;
         }
 
+        abstract void onTaskStarted(@NonNull T task);
+
         abstract void onTaskStateChange(@NonNull T task);
 
         abstract void onTaskCompleted(@NonNull T task);
@@ -85,6 +87,13 @@ public abstract class BaseTask implements Serializable, Callable {
         abstract void onTaskProgress(@NonNull T task, int progress);
 
         abstract void onTaskFailure(@NonNull T task, @NonNull TaskError taskError);
+
+        public final void notifyOnTaskStarted(@NonNull BaseTask task) {
+            T safeTask = getFrom(task);
+            if (safeTask != null) {
+                onTaskStarted(safeTask);
+            }
+        }
 
         public final void notifyTaskStateChange(@NonNull BaseTask task) {
             T safeTask = getFrom(task);
@@ -349,6 +358,17 @@ public abstract class BaseTask implements Serializable, Callable {
     }
 
     /**
+     * Notify listeners that the task has started.
+     * Should be called by the implementation of
+     * BaseTask when the task begins executing.
+     */
+    protected void onTaskStarted() {
+        if (mStateListener != null) {
+            mStateListener.notifyOnTaskStarted(this);
+        }
+    }
+
+    /**
      * Notify listeners that the task has changed state. Should
      * be called by the implementation of the BaseTask when it
      * changes its state.
@@ -407,7 +427,7 @@ public abstract class BaseTask implements Serializable, Callable {
     // -----------------------------------------------------------------------------------------------------
     // <editor-fold desc="Getters">
     @NonNull
-    public String getId() {
+    public final String getId() {
         return mId;
     }
 
@@ -447,7 +467,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return the error, nullable.
      */
     @Nullable
-    public TaskError getTaskError() {
+    public final TaskError getTaskError() {
         return mError;
     }
 
@@ -457,7 +477,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return the task state, non null.
      */
     @NonNull
-    public TaskState getTaskState() {
+    public final TaskState getTaskState() {
         return mState;
     }
 
@@ -467,7 +487,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return returns the time in milliseconds that the
      * task was created.
      */
-    public long getCreatedTimeMillis() {
+    public final long getCreatedTimeMillis() {
         return mCreatedTimeMillis;
     }
 
@@ -477,7 +497,7 @@ public abstract class BaseTask implements Serializable, Callable {
      *
      * @return progress out of 100
      */
-    public int getProgress() {
+    public final int getProgress() {
         return mProgress;
     }
     // </editor-fold>
