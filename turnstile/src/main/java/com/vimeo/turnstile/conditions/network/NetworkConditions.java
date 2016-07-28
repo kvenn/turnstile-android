@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.connectivity;
+package com.vimeo.turnstile.conditions.network;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -33,22 +33,22 @@ import android.net.ConnectivityManager;
 import android.support.annotation.RequiresPermission;
 
 import com.vimeo.turnstile.TaskLogger;
+import com.vimeo.turnstile.conditions.Conditions;
 
 /**
  * Interface which you can implement if you want to provide a custom
- * Network callback. Make sure you also implement {@link NetworkEventProvider}
- * for best performance.
+ * Network callback.
  * <p/>
  * Created by kylevenn on 9/8/2015
  */
-public abstract class NetworkUtil implements NetworkEventProvider {
+public abstract class NetworkConditions implements Conditions {
 
     final Context mContext;
-    private Listener mListener;
+    private Conditions.Listener mListener;
     final BroadcastReceiver mNetworkChangeReceiver;
 
     @RequiresPermission(permission.ACCESS_NETWORK_STATE)
-    NetworkUtil(Context context) {
+    public NetworkConditions(Context context) {
         mContext = context;
 
         // Receiver that just tells this class to tell the listener that something changed
@@ -59,7 +59,7 @@ public abstract class NetworkUtil implements NetworkEventProvider {
                     TaskLogger.w("Null listener in network util extended");
                     return;
                 }
-                mListener.onNetworkChange(isConnected());
+                mListener.onConditionsChange(isConnected());
             }
         };
 
@@ -70,11 +70,15 @@ public abstract class NetworkUtil implements NetworkEventProvider {
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    public abstract boolean isConnected();
-
+    protected abstract boolean isConnected();
 
     @Override
-    public void setListener(Listener listener) {
+    public void setListener(Conditions.Listener listener) {
         mListener = listener;
+    }
+
+    @Override
+    public boolean areConditionsMet() {
+        return isConnected();
     }
 }

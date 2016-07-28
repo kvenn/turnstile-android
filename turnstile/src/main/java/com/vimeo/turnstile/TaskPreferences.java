@@ -21,16 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.preferences;
+package com.vimeo.turnstile;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.support.v4.content.LocalBroadcastManager;
-
-import com.vimeo.turnstile.BaseTaskManager;
 
 /**
  * A wrapper class for {@link SharedPreferences} which holds valuable preferences that pertain to the

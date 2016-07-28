@@ -40,7 +40,7 @@ import com.vimeo.turnstile.preferences.BootPreferences;
  * <p/>
  * Created by kylevenn on 9/22/15.
  */
-public class BootReceiver extends BroadcastReceiver {
+public final class BootReceiver extends BroadcastReceiver {
 
     @Override
     @RequiresPermission(Manifest.permission.RECEIVE_BOOT_COMPLETED)

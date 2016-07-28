@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.connectivity;
+package com.vimeo.turnstile.conditions.network;
 
 import android.Manifest.permission;
 import android.content.Context;
@@ -29,7 +29,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.RequiresPermission;
 
-import com.vimeo.turnstile.preferences.TaskPreferences;
+import com.vimeo.turnstile.TaskPreferences;
 
 
 /**
@@ -42,12 +42,12 @@ import com.vimeo.turnstile.preferences.TaskPreferences;
  * <p/>
  * Created by kylevenn on 9/8/2015
  */
-public final class NetworkUtilExtended extends NetworkUtil {
+public final class NetworkConditionsExtended extends NetworkConditions {
 
     private TaskPreferences mTaskPreferences;
 
     @RequiresPermission(permission.ACCESS_NETWORK_STATE)
-    public NetworkUtilExtended(Context context) {
+    public NetworkConditionsExtended(Context context) {
         super(context);
     }
 
@@ -58,7 +58,7 @@ public final class NetworkUtilExtended extends NetworkUtil {
     }
 
     @Override
-    public boolean isConnected() {
+    protected boolean isConnected() {
         ConnectivityManager connManager =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (mTaskPreferences == null || mTaskPreferences.wifiOnly()) {

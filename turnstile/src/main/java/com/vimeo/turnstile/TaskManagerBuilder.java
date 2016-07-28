@@ -26,9 +26,10 @@ package com.vimeo.turnstile;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import com.vimeo.turnstile.connectivity.NetworkUtil;
-import com.vimeo.turnstile.connectivity.NetworkUtilExtended;
+import com.vimeo.turnstile.conditions.Conditions;
+import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
 
 /**
  * A class used to pass variables to the
@@ -39,30 +40,34 @@ import com.vimeo.turnstile.connectivity.NetworkUtilExtended;
  * @param <T> a type that extends {@link BaseTask}.
  */
 @SuppressWarnings("unused")
-public class TaskManagerBuilder<T extends BaseTask> {
+public final class TaskManagerBuilder<T extends BaseTask> {
 
-    /* package */ final Context mContext;
-    /* package */ NetworkUtil mNetworkUtil;
-    /* package */ Intent mNotificationIntent;
-    /* package */ LoggingInterface<T> mLoggingInterface;
+    @NonNull
+    final Context mContext;
+    @NonNull
+    Conditions mConditions;
+    @Nullable
+    Intent mNotificationIntent;
+    @Nullable
+    LoggingInterface<T> mLoggingInterface;
 
     public TaskManagerBuilder(@NonNull Context context) {
         mContext = context;
         // Set the default to be the extended network util
-        mNetworkUtil = new NetworkUtilExtended(mContext);
+        mConditions = new NetworkConditionsExtended(mContext);
     }
 
-    public TaskManagerBuilder<T> setNetworkUtil(NetworkUtil networkUtil) {
-        mNetworkUtil = networkUtil;
+    public TaskManagerBuilder<T> withConditions(@NonNull Conditions conditions) {
+        mConditions = conditions;
         return this;
     }
 
-    public TaskManagerBuilder<T> setNotificationIntent(Intent notificationIntent) {
+    public TaskManagerBuilder<T> withNotificationIntent(@Nullable Intent notificationIntent) {
         mNotificationIntent = notificationIntent;
         return this;
     }
 
-    public TaskManagerBuilder<T> setLoggingInterface(LoggingInterface<T> loggingInterface) {
+    public TaskManagerBuilder<T> withLoggingInterface(@Nullable LoggingInterface<T> loggingInterface) {
         mLoggingInterface = loggingInterface;
         return this;
     }

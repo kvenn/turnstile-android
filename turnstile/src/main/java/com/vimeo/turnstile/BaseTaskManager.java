@@ -29,19 +29,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 
 import com.vimeo.turnstile.BaseTask.TaskStateListener;
 import com.vimeo.turnstile.async.NamedThreadFactory;
-import com.vimeo.turnstile.connectivity.NetworkEventProvider;
-import com.vimeo.turnstile.connectivity.NetworkUtil;
-import com.vimeo.turnstile.connectivity.NetworkUtilExtended;
+import com.vimeo.turnstile.conditions.Conditions;
+import com.vimeo.turnstile.conditions.network.NetworkConditions;
+import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
 import com.vimeo.turnstile.database.TaskCache;
 import com.vimeo.turnstile.database.TaskCallback;
 import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.models.TaskError;
 import com.vimeo.turnstile.preferences.BootPreferences;
-import com.vimeo.turnstile.preferences.TaskPreferences;
 
 import java.util.Comparator;
 import java.util.List;
@@ -55,7 +54,7 @@ import java.util.concurrent.ThreadFactory;
 /**
  * This is the base class responsible for managing the queue of tasks.
  * It holds the logic for adding, retrying, and cancelling tasks.
- * It can optionally interact with an {@link NetworkUtil} for network
+ * It can optionally interact with an {@link NetworkConditions} for network
  * based tasks as well as a {@link BaseTaskService} for tasks that
  * should continue after the app is closed.
  * <p/>
@@ -69,7 +68,7 @@ import java.util.concurrent.ThreadFactory;
  * Created by kylevenn on 2/9/16.
  */
 @SuppressWarnings("unused")
-public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEventProvider.Listener {
+public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.Listener {
 
     private static final String LOG_TAG = "BaseTaskManager";
     private static final int MAX_ACTIVE_TASKS = 3; // TODO: Should we up the maximum? 2/25/16 [KV]
@@ -97,11 +96,14 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
 
     // ---- Optional Builder Fields ----
     // <editor-fold desc="Builder Fields">
-    private final NetworkUtil mNetworkUtil;
+    @NonNull
+    private final Conditions mConditions;
+
     @Nullable
     private final LoggingInterface<T> mLoggingInterface;
-    @Nullable
+
     // This could also do it by broadcast and have the app's receiver decide where to go 2/9/16 [KV]
+    @Nullable
     private final Intent mNotificationIntent;
 
     @Nullable
@@ -124,17 +126,17 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
         // be an issue.
         mContext = taskManagerBuilder.mContext.getApplicationContext();
         // TODO: Make it so network util is optional so that we might have no reliance on network 3/2/16 [KV]
-        mNetworkUtil = taskManagerBuilder.mNetworkUtil;
+        mConditions = taskManagerBuilder.mConditions;
         mLoggingInterface = taskManagerBuilder.mLoggingInterface;
         mNotificationIntent = taskManagerBuilder.mNotificationIntent;
 
         // Needs to be initialized with the manager name so that this instance is manager-specific
         mTaskPreferences = new TaskPreferences(mContext, taskName);
-        if (mNetworkUtil instanceof NetworkUtilExtended) {
+        if (mConditions instanceof NetworkConditionsExtended) {
             // If we're using the default network util, provide it with the manager-specific preferences
-            ((NetworkUtilExtended) mNetworkUtil).setTaskPreferences(mTaskPreferences);
+            ((NetworkConditionsExtended) mConditions).setTaskPreferences(mTaskPreferences);
         }
-        mNetworkUtil.setListener(this);
+        mConditions.setListener(this);
         mIsPaused = mTaskPreferences.isPaused();
 
         // ---- Executor Service ----
@@ -190,6 +192,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
      * Return if you'd like the subclass of manager to try
      * and resume its tasks when the devices first starts.
      */
+    @SuppressWarnings("MethodMayBeStatic")
     protected boolean startOnDeviceBoot() {
         return false;
     }
@@ -202,6 +205,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
      */
     // <editor-fold desc="TaskStateListener Implementation">
     private final TaskStateListener<T> mTaskListener = new TaskStateListener<T>(getTaskClass()) {
+        @Override
+        void onTaskStarted(@NonNull T task) {
+
+        }
+
         @Override
         public void onTaskStateChange(@NonNull T task) {
             mTaskCache.upsert(task);
@@ -226,7 +234,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
         }
 
         @Override
-        public void onTaskFailure(@NonNull T task, TaskError taskError) {
+        public void onTaskFailure(@NonNull T task, @NonNull TaskError taskError) {
             logFailure(task, taskError);
             mTaskCache.upsert(task);
 
@@ -245,32 +253,32 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
      */
     // <editor-fold desc="Task Accessors">
     @Nullable
-    public T getTask(String taskId) {
+    public final T getTask(String taskId) {
         return mTaskCache.get(taskId);
     }
 
     @NonNull
-    public Map<String, T> getTasks() {
+    public final Map<String, T> getTasks() {
         return mTaskCache.getTasks();
     }
 
 
-    public List<T> getTasksToRun() {
+    public final List<T> getTasksToRun() {
         return mTaskCache.getTasksToRun();
     }
 
     @NonNull
-    public List<T> getDateOrderedTaskList() {
+    public final List<T> getDateOrderedTaskList() {
         return mTaskCache.getDateOrderedTaskList();
     }
 
     @NonNull
-    public List<T> getDateReverseOrderedTaskList() {
+    public final List<T> getDateReverseOrderedTaskList() {
         return mTaskCache.getDateReverseOrderedTaskList();
     }
 
     @NonNull
-    public List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
+    public final List<T> getOrderedTaskList(@NonNull Comparator<T> comparator) {
         return mTaskCache.getOrderedTaskList(comparator);
     }
 
@@ -362,22 +370,22 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
 
     // Eventually with failure states we can call this with isResume = false to start over
     private void addTask(@NonNull T task, boolean isResume) {
-        if (task.getId() == null) {
-            TaskLogger.e("Task with a null ID passed to addTask. Will not add it.");
+        if (TextUtils.isEmpty(task.getId())) {
+            TaskLogger.e("Task with an empty ID passed to addTask. Will not add it.");
             return;
         }
 
         // We set the context on the task
         task.setContext(mContext);
         task.setStateListener(mTaskListener);
-        task.setNetworkUtil(mNetworkUtil);
+        task.setConditions(mConditions);
 
         // Only kick off the task if there is internet (and it's not paused)
         // If no network, it's persisted elsewhere so this won't effect it starting later
         // We also don't want to re-add a task if it's already in the queue (since overwriting the value
         // in the hashmap won't cancel the task that's running. This way we should never be able to have
         // two of the same task running at once)
-        if ((!mIsPaused && hasNetwork()) && !sTaskPool.containsKey(task.getId())) {
+        if ((!mIsPaused && areDeviceConditionsMet()) && !sTaskPool.containsKey(task.getId())) {
             task.setIsRetry(isResume);
             Future taskFuture = mCachedExecutorService.submit(task);
             sTaskPool.put(task.getId(), taskFuture);
@@ -498,13 +506,13 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
         }
     }
 
-    private void pauseForNetwork() {
+    private void pauseForConditions() {
         TaskLogger.d(LOG_TAG, "Pause for network");
         broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
         pauseAll();
     }
 
-    private void resumeForNetwork() {
+    private void resumeForConditions() {
         TaskLogger.d(LOG_TAG, "Resume for network");
         if (resumeAll()) {
             broadcastEvent(TaskConstants.EVENT_NETWORK_RETURNED);
@@ -555,7 +563,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
         if (mIsPaused) {
             isSuspended = true;
             broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
-        } else if (!hasNetwork()) {
+        } else if (!areDeviceConditionsMet()) {
             isSuspended = true;
             broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
         }
@@ -646,24 +654,25 @@ public abstract class BaseTaskManager<T extends BaseTask> implements NetworkEven
      * -----------------------------------------------------------------------------------------------------
      */
     // <editor-fold desc="Network">
-    public NetworkUtil getNetworkUtil() {
-        return mNetworkUtil;
+    @NonNull
+    public final Conditions getConditions() {
+        return mConditions;
     }
 
-    public boolean hasNetwork() {
-        return mNetworkUtil.isConnected();
+    public final boolean areDeviceConditionsMet() {
+        return mConditions.areConditionsMet();
     }
 
     @Override
-    public void onNetworkChange(boolean isConnected) {
+    public void onConditionsChange(boolean conditionsMet) {
         TaskLogger.d(LOG_TAG, "Network change");
         // Only resume if the connection changes to connected and wasn't previously connected
         // But always pause even if it's already paused
-        if (isConnected) {
+        if (conditionsMet) {
             // Don't cancel all threads
-            resumeForNetwork();
+            resumeForConditions();
         } else {
-            pauseForNetwork();
+            pauseForConditions();
         }
     }
     // </editor-fold>

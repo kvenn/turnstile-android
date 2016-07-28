@@ -30,7 +30,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import com.google.gson.annotations.SerializedName;
-import com.vimeo.turnstile.connectivity.NetworkUtil;
+import com.vimeo.turnstile.conditions.Conditions;
 import com.vimeo.turnstile.models.TaskError;
 
 import java.io.Serializable;
@@ -52,6 +52,7 @@ import java.util.concurrent.Callable;
  * <p/>
  * Created by kylevenn on 2/9/16.
  */
+@SuppressWarnings("unused")
 public abstract class BaseTask implements Serializable, Callable {
 
     private static final long serialVersionUID = -2051421294839668480L;
@@ -77,13 +78,22 @@ public abstract class BaseTask implements Serializable, Callable {
             mClass = clazz;
         }
 
+        abstract void onTaskStarted(@NonNull T task);
+
         abstract void onTaskStateChange(@NonNull T task);
 
         abstract void onTaskCompleted(@NonNull T task);
 
         abstract void onTaskProgress(@NonNull T task, int progress);
 
-        abstract void onTaskFailure(@NonNull T task, TaskError taskError);
+        abstract void onTaskFailure(@NonNull T task, @NonNull TaskError taskError);
+
+        public final void notifyOnTaskStarted(@NonNull BaseTask task) {
+            T safeTask = getFrom(task);
+            if (safeTask != null) {
+                onTaskStarted(safeTask);
+            }
+        }
 
         public final void notifyTaskStateChange(@NonNull BaseTask task) {
             T safeTask = getFrom(task);
@@ -106,7 +116,7 @@ public abstract class BaseTask implements Serializable, Callable {
             }
         }
 
-        public final void notifyOnTaskFailure(@NonNull BaseTask task, TaskError taskError) {
+        public final void notifyOnTaskFailure(@NonNull BaseTask task, @NonNull TaskError taskError) {
             T safeTask = getFrom(task);
             if (safeTask != null) {
                 onTaskFailure(safeTask, taskError);
@@ -174,7 +184,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * An optional network util for network related tasks
      */
     @Nullable
-    protected transient NetworkUtil mNetworkUtil;
+    protected transient Conditions mConditions;
 
     /**
      * This marks the number of retries this task has attempted - this is to possibly rebind if there
@@ -198,6 +208,7 @@ public abstract class BaseTask implements Serializable, Callable {
     /**
      * Unique identifier for this task
      */
+    @NonNull
     @SerializedName("id")
     protected String mId;
 
@@ -212,6 +223,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * It isn't set to null when it is executing again - so you can't rely on this having a null value.
      */
     @SerializedName("error")
+    @Nullable
     protected TaskError mError;
 
     /**
@@ -232,7 +244,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * Most basic constructor with all requirements.
      * If this constructor is used, the Tasks {@link TaskState} will default to {@link TaskState#READY}
      */
-    public BaseTask(String id) {
+    public BaseTask(@NonNull String id) {
         mId = id;
         mCreatedTimeMillis = System.currentTimeMillis();
     }
@@ -240,7 +252,7 @@ public abstract class BaseTask implements Serializable, Callable {
     /**
      * Optionally initialize the task with a {@link TaskState} and created time (for initialization from database)
      */
-    public BaseTask(String id, TaskState taskState, long createdTimeMillis) {
+    public BaseTask(@NonNull String id, TaskState taskState, long createdTimeMillis) {
         mId = id;
         mState = taskState;
         mCreatedTimeMillis = createdTimeMillis;
@@ -292,6 +304,12 @@ public abstract class BaseTask implements Serializable, Callable {
         return null;
     }
 
+    /**
+     * Determines whether or not the execute method of the
+     * task is currently running.
+     *
+     * @return true if the task is running, false otherwise.
+     */
     public boolean isRunning() {
         return mIsRunning;
     }
@@ -309,8 +327,8 @@ public abstract class BaseTask implements Serializable, Callable {
         mStateListener = stateListener;
     }
 
-    public void setNetworkUtil(@Nullable NetworkUtil networkUtil) {
-        mNetworkUtil = networkUtil;
+    public void setConditions(@Nullable Conditions conditions) {
+        mConditions = conditions;
     }
 
     /**
@@ -339,12 +357,33 @@ public abstract class BaseTask implements Serializable, Callable {
         }
     }
 
+    /**
+     * Notify listeners that the task has started.
+     * Should be called by the implementation of
+     * BaseTask when the task begins executing.
+     */
+    protected void onTaskStarted() {
+        if (mStateListener != null) {
+            mStateListener.notifyOnTaskStarted(this);
+        }
+    }
+
+    /**
+     * Notify listeners that the task has changed state. Should
+     * be called by the implementation of the BaseTask when it
+     * changes its state.
+     */
     protected void onTaskChange() {
         if (mStateListener != null) {
             mStateListener.notifyTaskStateChange(this);
         }
     }
 
+    /**
+     * Notify listeners that the task has been completed. Should
+     * be called by the implementation of the BaseTask after it
+     * finishes executing.
+     */
     protected void onTaskCompleted() {
         mState = TaskState.COMPLETE;
         if (mStateListener != null) {
@@ -352,6 +391,13 @@ public abstract class BaseTask implements Serializable, Callable {
         }
     }
 
+    /**
+     * Notify listeners that the progress of the task has changed.
+     * Should be called by the implementation of the BaseTask
+     * whenever the progress changes.
+     *
+     * @param progress The progress, between 0 and 100 of the task.
+     */
     protected void onTaskProgress(int progress) {
         mProgress = progress;
         if (mStateListener != null) {
@@ -359,7 +405,15 @@ public abstract class BaseTask implements Serializable, Callable {
         }
     }
 
-    protected void onTaskFailure(TaskError error) {
+    /**
+     * Notify listeners that the task has run into an error.
+     * Should be called by the implementation of the BaseTask
+     * when an error occurs.
+     *
+     * @param error the error that occurred and should be
+     *              propagated to listeners.
+     */
+    protected void onTaskFailure(@NonNull TaskError error) {
         mState = TaskState.ERROR;
         mError = error;
         if (mStateListener != null) {
@@ -372,31 +426,68 @@ public abstract class BaseTask implements Serializable, Callable {
     // Getters
     // -----------------------------------------------------------------------------------------------------
     // <editor-fold desc="Getters">
-    public String getId() {
+    @NonNull
+    public final String getId() {
         return mId;
     }
 
+    /**
+     * Returns whether or not the task state is complete.
+     *
+     * @return true if task state equals {@link TaskState#COMPLETE},
+     * false otherwise.
+     */
     public boolean isComplete() {
         return mState == TaskState.COMPLETE;
     }
 
+    /**
+     * Returns whether or not the task state is in error.
+     *
+     * @return true if task state equals {@link TaskState#ERROR},
+     * false otherwise.
+     */
     public boolean isError() {
         return mState == TaskState.ERROR;
     }
 
+    /**
+     * Returns whether or not the task state is ready to execute.
+     *
+     * @return true if task state equals {@link TaskState#READY},
+     * false otherwise.
+     */
     public boolean isReady() {
         return mState == TaskState.READY;
     }
 
-    public TaskError getTaskError() {
+    /**
+     * The error that the task ran into, may be null.
+     *
+     * @return the error, nullable.
+     */
+    @Nullable
+    public final TaskError getTaskError() {
         return mError;
     }
 
-    public TaskState getTaskState() {
+    /**
+     * Gets the current task state.
+     *
+     * @return the task state, non null.
+     */
+    @NonNull
+    public final TaskState getTaskState() {
         return mState;
     }
 
-    public long getCreatedTimeMillis() {
+    /**
+     * The time in milliseconds that the task was created.
+     *
+     * @return returns the time in milliseconds that the
+     * task was created.
+     */
+    public final long getCreatedTimeMillis() {
         return mCreatedTimeMillis;
     }
 
@@ -406,7 +497,7 @@ public abstract class BaseTask implements Serializable, Callable {
      *
      * @return progress out of 100
      */
-    public int getProgress() {
+    public final int getProgress() {
         return mProgress;
     }
     // </editor-fold>
