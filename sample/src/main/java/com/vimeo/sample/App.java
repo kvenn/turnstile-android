@@ -20,6 +20,7 @@ public class App extends Application {
         TaskManagerBuilder<SimpleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
         taskTaskManagerBuilder.withLoggingInterface(new SimpleLoggingInterface());
         taskTaskManagerBuilder.withConditions(new SimpleConditions());
+        taskTaskManagerBuilder.withStartOnDeviceBoot(false);
 
         // We could also use the built in NetworkConditionsBasic class
         // taskTaskManagerBuilder.withConditions(new NetworkConditionsBasic(this));

@@ -51,24 +51,45 @@ public final class TaskManagerBuilder<T extends BaseTask> {
     @Nullable
     LoggingInterface<T> mLoggingInterface;
 
+    boolean mStartOnDeviceBoot;
+
     public TaskManagerBuilder(@NonNull Context context) {
         mContext = context;
         // Set the default to be the extended network util
         mConditions = new NetworkConditionsExtended(mContext);
+        mStartOnDeviceBoot = false;
     }
 
+    @NonNull
     public TaskManagerBuilder<T> withConditions(@NonNull Conditions conditions) {
         mConditions = conditions;
         return this;
     }
 
+    @NonNull
     public TaskManagerBuilder<T> withNotificationIntent(@Nullable Intent notificationIntent) {
         mNotificationIntent = notificationIntent;
         return this;
     }
 
+    @NonNull
     public TaskManagerBuilder<T> withLoggingInterface(@Nullable LoggingInterface<T> loggingInterface) {
         mLoggingInterface = loggingInterface;
+        return this;
+    }
+
+    /**
+     * Use this if you'd like the task manager to
+     * resume its tasks when the devices first starts.
+     *
+     * @param startOnDeviceBoot true if you want the task
+     *                          manager to start on device
+     *                          boot, false otherwise. default
+     *                          is false.
+     */
+    @NonNull
+    public TaskManagerBuilder<T> withStartOnDeviceBoot(boolean startOnDeviceBoot) {
+        mStartOnDeviceBoot = startOnDeviceBoot;
         return this;
     }
 }

@@ -78,6 +78,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     // Could be Future<Object> if there is value in a return object
     private final static ConcurrentHashMap<String, Future> sTaskPool = new ConcurrentHashMap<>();
 
+    private final boolean mStartOnDeviceBoot;
+
     // ---- TaskCache ----
     @NonNull
     protected final TaskCache<T> mTaskCache;
@@ -129,6 +131,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mConditions = taskManagerBuilder.mConditions;
         mLoggingInterface = taskManagerBuilder.mLoggingInterface;
         mNotificationIntent = taskManagerBuilder.mNotificationIntent;
+        mStartOnDeviceBoot = taskManagerBuilder.mStartOnDeviceBoot;
 
         // Needs to be initialized with the manager name so that this instance is manager-specific
         mTaskPreferences = new TaskPreferences(mContext, taskName);
@@ -192,9 +195,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      * Return if you'd like the subclass of manager to try
      * and resume its tasks when the devices first starts.
      */
-    @SuppressWarnings("MethodMayBeStatic")
-    protected boolean startOnDeviceBoot() {
-        return false;
+    protected final boolean startOnDeviceBoot() {
+        return mStartOnDeviceBoot;
     }
     // </editor-fold>
 
@@ -235,6 +237,12 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
         @Override
         public void onTaskFailure(@NonNull T task, @NonNull TaskError taskError) {
+            if (task.getTaskError() == null) {
+                // If the task error is null, we are in a weird state
+                // since this method should never be called unless the
+                // task is in error.
+                return;
+            }
             logFailure(task, taskError);
             mTaskCache.upsert(task);
 
