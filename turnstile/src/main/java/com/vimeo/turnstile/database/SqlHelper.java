@@ -93,12 +93,12 @@ class SqlHelper {
             }
         }
         builder.append(" );");
-        TaskLogger.d("CREATE: " + builder.toString());
+        TaskLogger.getLogger().d("CREATE: " + builder.toString());
         return builder.toString();
     }
 
     public static String drop(String tableToDrop) {
-        TaskLogger.d("DROP: " + tableToDrop);
+        TaskLogger.getLogger().d("DROP: " + tableToDrop);
         return "DROP TABLE IF EXISTS " + tableToDrop;
     }
 
@@ -137,7 +137,7 @@ class SqlHelper {
         }
         if (where.isEmpty()) {
             // This should never be empty ever
-            TaskLogger.w("where empty in update statement");
+            TaskLogger.getLogger().w("where empty in update statement");
         } else {
             builder.append(" WHERE ").append(where);
         }
@@ -261,7 +261,7 @@ class SqlHelper {
         if (limit != null) {
             builder.append(" LIMIT ").append(limit);
         }
-        TaskLogger.d("SELECT: " + builder.toString());
+        TaskLogger.getLogger().d("SELECT: " + builder.toString());
         return builder.toString();
     }
 

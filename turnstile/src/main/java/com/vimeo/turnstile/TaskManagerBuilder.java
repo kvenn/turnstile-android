@@ -48,8 +48,6 @@ public final class TaskManagerBuilder<T extends BaseTask> {
     Conditions mConditions;
     @Nullable
     Intent mNotificationIntent;
-    @Nullable
-    LoggingInterface<T> mLoggingInterface;
 
     boolean mStartOnDeviceBoot;
 
@@ -69,12 +67,6 @@ public final class TaskManagerBuilder<T extends BaseTask> {
     @NonNull
     public TaskManagerBuilder<T> withNotificationIntent(@Nullable Intent notificationIntent) {
         mNotificationIntent = notificationIntent;
-        return this;
-    }
-
-    @NonNull
-    public TaskManagerBuilder<T> withLoggingInterface(@Nullable LoggingInterface<T> loggingInterface) {
-        mLoggingInterface = loggingInterface;
         return this;
     }
 

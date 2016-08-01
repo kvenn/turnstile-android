@@ -296,7 +296,7 @@ public final class TaskCache<T extends BaseTask> {
      */
     public void upsert(@NonNull final T task) {
         if (task.getId() == null) {
-            TaskLogger.e("Task passed to upsert without an ID.");
+            TaskLogger.getLogger().e("Task passed to upsert without an ID.");
             return;
         }
         // This will replace the current task in the cache (or 'put' it if it's not there)
@@ -361,7 +361,7 @@ public final class TaskCache<T extends BaseTask> {
     @WorkerThread
     private void insertToDatabase(@NonNull T task) {
         if (task.getId() == null) {
-            TaskLogger.e("Task passed to insertToDatabase without an ID.");
+            TaskLogger.getLogger().e("Task passed to insertToDatabase without an ID.");
             return;
         }
         // This insert has an OR IGNORE clause. That means if we try to insert a value that already exists,
@@ -369,7 +369,7 @@ public final class TaskCache<T extends BaseTask> {
         // and that 'complete' commit succeeds (and then we try to commit again).
         long insertId = mDatabase.insert(task);
         if (insertId == TaskConstants.NOT_FOUND) {
-            TaskLogger.d("Task already exists in database");
+            TaskLogger.getLogger().d("Task already exists in database");
         }
     }
     // </editor-fold>

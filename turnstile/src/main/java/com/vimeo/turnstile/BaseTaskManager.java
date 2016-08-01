@@ -101,9 +101,6 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     @NonNull
     private final Conditions mConditions;
 
-    @Nullable
-    private final LoggingInterface<T> mLoggingInterface;
-
     // This could also do it by broadcast and have the app's receiver decide where to go 2/9/16 [KV]
     @Nullable
     private final Intent mNotificationIntent;
@@ -129,7 +126,6 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mContext = taskManagerBuilder.mContext.getApplicationContext();
         // TODO: Make it so network util is optional so that we might have no reliance on network 3/2/16 [KV]
         mConditions = taskManagerBuilder.mConditions;
-        mLoggingInterface = taskManagerBuilder.mLoggingInterface;
         mNotificationIntent = taskManagerBuilder.mNotificationIntent;
         mStartOnDeviceBoot = taskManagerBuilder.mStartOnDeviceBoot;
 
@@ -379,7 +375,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     // Eventually with failure states we can call this with isResume = false to start over
     private void addTask(@NonNull T task, boolean isResume) {
         if (TextUtils.isEmpty(task.getId())) {
-            TaskLogger.e("Task with an empty ID passed to addTask. Will not add it.");
+            TaskLogger.getLogger().e("Task with an empty ID passed to addTask. Will not add it.");
             return;
         }
 
@@ -411,10 +407,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      * NOTE: this doesn't delete the video from the server.
      */
     public void cancelTask(String id) {
-        if (mLoggingInterface != null) {
-            T task = mTaskCache.get(id);
-            mLoggingInterface.logTaskCancel(task);
-        }
+        T task = mTaskCache.get(id);
+        TaskLogger.getLogger().d("Task canceled with id: " + id);
         removeFromTaskPool(id);
         // TODO: deleteIfInDb();
         // returns true if it was actually in the db
@@ -439,15 +433,13 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         T task = mTaskCache.get(taskId);
         broadcastEvent(taskId, TaskConstants.EVENT_RETRYING);
         if (task != null) {
-            if (mLoggingInterface != null) {
-                mLoggingInterface.logTaskRetry(task);
-            }
+            TaskLogger.getLogger().d("Retrying task with id: " + taskId);
             // Run the task again
             addTask(task, true);
         } else {
             // The task that we're trying to retry isn't in the local db. That shouldn't be possible
             // so we should log it.
-            TaskLogger.e("Attempt to retry an task that doesn't exist");
+            TaskLogger.getLogger().e("Attempt to retry an task that doesn't exist");
         }
     }
     // </editor-fold>
@@ -495,11 +487,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     // Will resume if we're not already running - this is just a check that can be made to ensure everything
     // is running correctly
     public void resumeAllIfNecessary() {
-        TaskLogger.d("Resume all if necessary");
+        TaskLogger.getLogger().d("Resume all if necessary");
         // TODO: Make sure taskpool only ever includes currently running tasks 11/5/15 [KV]
         // Also what if it's in the process of pausing when we go to resume (threading issue?)
         if (!sTaskPool.isEmpty()) {
-            TaskLogger.d("Resuming all wasn't necessary");
+            TaskLogger.getLogger().d("Resuming all wasn't necessary");
             // If it's already resumed or the task pool has tasks running, don't bother trying to resume
             return;
         }
@@ -515,13 +507,13 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     }
 
     private void pauseForConditions() {
-        TaskLogger.d(LOG_TAG, "Pause for network");
+        TaskLogger.getLogger().d("Pause for network");
         broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
         pauseAll();
     }
 
     private void resumeForConditions() {
-        TaskLogger.d(LOG_TAG, "Resume for network");
+        TaskLogger.getLogger().d("Resume for network");
         if (resumeAll()) {
             broadcastEvent(TaskConstants.EVENT_NETWORK_RETURNED);
         }
@@ -673,7 +665,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
     @Override
     public void onConditionsChange(boolean conditionsMet) {
-        TaskLogger.d(LOG_TAG, "Network change");
+        TaskLogger.getLogger().d("Network change");
         // Only resume if the connection changes to connected and wasn't previously connected
         // But always pause even if it's already paused
         if (conditionsMet) {
@@ -692,15 +684,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      */
     // <editor-fold desc="Logging">
     protected void logSuccess(T task) {
-        if (mLoggingInterface != null) {
-            mLoggingInterface.logTaskSuccess(task);
-        }
+        TaskLogger.getLogger().d("Task succeeded with id: " + task.getId());
     }
 
     protected void logFailure(T task, TaskError error) {
-        if (mLoggingInterface != null) {
-            mLoggingInterface.logTaskFailure(task, error);
-        }
+        TaskLogger.getLogger().d("Task failed with id: " + task.getId() + ", error: " + error.getMessage());
     }
     // </editor-fold>
 

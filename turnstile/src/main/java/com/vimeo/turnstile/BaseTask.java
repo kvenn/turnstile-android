@@ -248,15 +248,6 @@ public abstract class BaseTask implements Serializable, Callable {
         mId = id;
         mCreatedTimeMillis = System.currentTimeMillis();
     }
-
-    /**
-     * Optionally initialize the task with a {@link TaskState} and created time (for initialization from database)
-     */
-    public BaseTask(@NonNull String id, TaskState taskState, long createdTimeMillis) {
-        mId = id;
-        mState = taskState;
-        mCreatedTimeMillis = createdTimeMillis;
-    }
     // </editor-fold>
 
     // -----------------------------------------------------------------------------------------------------
@@ -294,10 +285,10 @@ public abstract class BaseTask implements Serializable, Callable {
     public Object call() throws Exception {
         mIsRunning = true;
         if (mIsRetry) {
-            TaskLogger.d("Task Resumed " + mId);
+            TaskLogger.getLogger().d("Task Resumed " + mId);
             retry();
         } else {
-            TaskLogger.d("Task Started For First Time " + mId);
+            TaskLogger.getLogger().d("Task Started For First Time " + mId);
             execute();
         }
         mIsRunning = false;

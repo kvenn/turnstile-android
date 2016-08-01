@@ -4,9 +4,10 @@ import android.app.Application;
 import android.content.Intent;
 
 import com.vimeo.sample.tasks.SimpleConditions;
-import com.vimeo.sample.tasks.SimpleLoggingInterface;
+import com.vimeo.sample.tasks.SimpleLogger;
 import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
+import com.vimeo.turnstile.TaskLogger;
 import com.vimeo.turnstile.TaskManagerBuilder;
 
 public class App extends Application {
@@ -17,8 +18,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // Inject the components we want into the TaskManager
         TaskManagerBuilder<SimpleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
-        taskTaskManagerBuilder.withLoggingInterface(new SimpleLoggingInterface());
         taskTaskManagerBuilder.withConditions(new SimpleConditions());
         taskTaskManagerBuilder.withStartOnDeviceBoot(false);
 
@@ -27,6 +28,9 @@ public class App extends Application {
 
         // Or we could use the built in NetworkConditionsExtended class
         // taskTaskManagerBuilder.withConditions(new NetworkConditionsExtended(this));
+
+        // Use our own task logger
+        TaskLogger.setLogger(new SimpleLogger());
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(NOTIFICATION_INTENT_KEY);

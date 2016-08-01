@@ -73,7 +73,7 @@ class DbOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        TaskLogger.w("Upgrading database from version " + oldVersion + " to " + newVersion);
+        TaskLogger.getLogger().w("Upgrading database from version " + oldVersion + " to " + newVersion);
         switch (oldVersion) {
             case 1:
             case 2:
@@ -87,8 +87,8 @@ class DbOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        TaskLogger.w("Downgrading database from version " + oldVersion + " to " + newVersion +
-                     ", which will destroy all old data");
+        TaskLogger.getLogger().w("Downgrading database from version " + oldVersion + " to " + newVersion +
+                                 ", which will destroy all old data");
         db.execSQL(SqlHelper.drop(mTableName));
         onCreate(db);
     }

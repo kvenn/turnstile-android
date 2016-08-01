@@ -23,59 +23,60 @@
  */
 package com.vimeo.turnstile;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.vimeo.turnstile.TaskLogger.Logger;
+
 /**
- * The logger holder
+ * The default implementation of {@link Logger}.
+ * It simply logs to the Android {@link Log} class.
  * <p/>
  * Created by restainoa on 8/1/16.
  */
-public final class TaskLogger {
+class DefaultLogger implements Logger {
 
-    private TaskLogger() {
+    private static final String LOG_TAG = "DefaultLogger";
+
+    @Override
+    public void e(String error) {
+        Log.e(LOG_TAG, error);
     }
 
-    /**
-     * This is a generic logging interface which can be used for
-     * logging specific as well as general events fired throughout
-     * the task life cycle.
-     * <p/>
-     * Created by kylevenn on 12/8/15.
-     */
-    public interface Logger {
+    @Override
+    public void e(String error, Exception exception) {
+        if (exception != null) {
+            String exceptionMessage = "";
+            if (exception.getMessage() != null && !exception.getMessage().isEmpty()) {
+                exceptionMessage = exception.getMessage();
+            }
 
-        void e(String error);
-
-        void e(String error, Exception exception);
-
-        void d(String debug);
-
-        void i(String info);
-
-        void w(String warning);
-
-        void v(String verbose);
+            if (error != null && !error.isEmpty()) {
+                exceptionMessage = error + " - " + exceptionMessage;
+            }
+            if (!exceptionMessage.isEmpty()) {
+                Log.e(LOG_TAG, exceptionMessage);
+            }
+        }
     }
 
-    @NonNull
-    private static Logger sLogger = new DefaultLogger();
-
-    /**
-     * Sets your own Logger to be used by the library
-     * for logging. If you do not set one, by default
-     * the library will use {@link DefaultLogger} which
-     * uses the Android {@link Log} class.
-     *
-     * @param logger the logger to use for logging.
-     */
-    public static void setLogger(@NonNull Logger logger) {
-        sLogger = logger;
+    @Override
+    public void d(String debug) {
+        Log.d(LOG_TAG, debug);
     }
 
-    @NonNull
-    public static Logger getLogger() {
-        return sLogger;
+    @Override
+    public void i(String info) {
+        Log.i(LOG_TAG, info);
+    }
+
+    @Override
+    public void w(String warning) {
+        Log.w(LOG_TAG, warning);
+    }
+
+    @Override
+    public void v(String verbose) {
+        Log.v(LOG_TAG, verbose);
     }
 
 }

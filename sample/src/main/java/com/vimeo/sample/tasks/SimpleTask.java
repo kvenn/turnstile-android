@@ -17,11 +17,6 @@ public class SimpleTask extends BaseTask {
         TAG = "SimpleTask - " + id;
     }
 
-    public SimpleTask(String id, TaskState taskState, long createdTimeMillis) {
-        super(id, taskState, createdTimeMillis);
-        TAG = "SimpleTask - " + id;
-    }
-
     @Override
     protected void execute() {
         onTaskStarted();

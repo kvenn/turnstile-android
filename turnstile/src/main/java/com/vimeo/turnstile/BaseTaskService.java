@@ -84,7 +84,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     @Override
     public final void onCreate() {
         super.onCreate();
-        TaskLogger.d("Task Service onCreate");
+        TaskLogger.getLogger().d("Task Service onCreate");
         // The application will have already initialized the manager at this point 2/29/16 [KV]
         mTaskManager = getManagerInstance();
 
@@ -107,7 +107,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     // - BootReceived or TaskAdded
     @Override
     public final int onStartCommand(Intent intent, int flags, int startId) {
-        TaskLogger.d("Task Service onStartCommand");
+        TaskLogger.getLogger().d("Task Service onStartCommand");
 
         // TODO: This is going to get called A LOT because we issue startService commands for every added task as
         // well as every single state change. Is that bad? We can make optimizations if performance is an issue or
