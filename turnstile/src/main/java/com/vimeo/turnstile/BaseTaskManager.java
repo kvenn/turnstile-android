@@ -207,7 +207,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     private final TaskStateListener<T> mTaskListener = new TaskStateListener<T>(getTaskClass()) {
         @Override
         void onTaskStarted(@NonNull T task) {
-
+            broadcastEvent(task.getId(), TaskConstants.EVENT_STARTED);
         }
 
         @Override

@@ -46,6 +46,7 @@ public final class TaskConstants {
     public static final String EVENT_FAILURE = "EVENT_FAILURE";
     public static final String EVENT_RETRYING = "EVENT_RETRYING";
     public static final String EVENT_ADDED = "EVENT_ADDED";
+    public static final String EVENT_STARTED = "EVENT_STARTED";
     public static final String EVENT_CANCELLED = "EVENT_CANCELLED";
 
     public static final String EVENT_RESUME_IF_NECESSARY = "EVENT_RESUME_IF_NECESSARY";
