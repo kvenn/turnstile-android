@@ -21,64 +21,64 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.conditions.network;
+package com.vimeo.turnstile.conditions;
 
-import android.Manifest;
 import android.Manifest.permission;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.RequiresPermission;
 
 import com.vimeo.turnstile.TaskLogger;
-import com.vimeo.turnstile.conditions.Conditions;
+import com.vimeo.turnstile.TaskPreferences;
+import com.vimeo.turnstile.TaskPreferences.OnSettingsChangedListener;
+
 
 /**
- * Interface which you can implement if you want to provide a custom
- * Network callback.
+ * Default implementation for network utility to observe network events with
+ * variable modes.
+ * <p/>
+ * {@link #isConnected()} will rely on a preference in {@link TaskPreferences}
+ * to see which mode counts as connected. If you're using this class, you have
+ * to be sure to update preference on user selection.
  * <p/>
  * Created by kylevenn on 9/8/2015
  */
-public abstract class NetworkConditions implements Conditions {
+public final class NetworkConditionsExtended extends NetworkConditions {
 
-    final Context mContext;
-    private Conditions.Listener mListener;
-    final BroadcastReceiver mNetworkChangeReceiver;
+    private TaskPreferences mTaskPreferences;
 
     @RequiresPermission(permission.ACCESS_NETWORK_STATE)
-    public NetworkConditions(Context context) {
-        mContext = context;
+    public NetworkConditionsExtended(Context context) {
+        super(context);
+    }
 
-        // Receiver that just tells this class to tell the listener that something changed
-        mNetworkChangeReceiver = new BroadcastReceiver() {
+    public void setTaskPreferences(TaskPreferences taskPreferences) {
+        mTaskPreferences = taskPreferences;
+        // If there is a settings change, then trigger the onNetworkChange event just as in super()
+        mTaskPreferences.registerForSettingsChange(new OnSettingsChangedListener() {
             @Override
-            public void onReceive(Context ctx, Intent intent) {
+            public void onSettingChanged() {
                 if (mListener == null) {
                     TaskLogger.getLogger().w("Null listener in network util extended");
                     return;
                 }
                 mListener.onConditionsChange(isConnected());
             }
-        };
-
-        // Set the receiver to listen for network connectivity change
-        context.getApplicationContext()
-                .registerReceiver(mNetworkChangeReceiver,
-                                  new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-    }
-
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    protected abstract boolean isConnected();
-
-    @Override
-    public void setListener(Conditions.Listener listener) {
-        mListener = listener;
+        });
     }
 
     @Override
-    public boolean areConditionsMet() {
-        return isConnected();
+    protected boolean isConnected() {
+        ConnectivityManager connManager =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (mTaskPreferences == null || mTaskPreferences.wifiOnly()) {
+            NetworkInfo wifi = connManager.getActiveNetworkInfo();
+            return wifi != null && wifi.getType() == ConnectivityManager.TYPE_WIFI && wifi.isConnected();
+        } else {
+            NetworkInfo netInfo = connManager.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnected();
+        }
     }
+
 }

@@ -29,7 +29,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.vimeo.turnstile.conditions.Conditions;
-import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
+import com.vimeo.turnstile.conditions.NetworkConditionsExtended;
 
 /**
  * A class used to pass variables to the

@@ -21,53 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.conditions.network;
+package com.vimeo.turnstile.conditions;
 
-import android.Manifest.permission;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.RequiresPermission;
 
-import com.vimeo.turnstile.TaskPreferences;
+import com.vimeo.turnstile.conditions.NetworkConditions;
 
 
 /**
- * Default implementation for network utility to observe network events with
- * variable modes.
- * <p/>
- * {@link #isConnected()} will rely on a preference in {@link TaskPreferences}
- * to see which mode counts as connected. If you're using this class, you have
- * to be sure to update preference on user selection.
+ * Default implementation for network conditions to observe network
+ * events {@link #isConnected()} will return true if there is any
+ * network (wifi, data, etc.)
  * <p/>
  * Created by kylevenn on 9/8/2015
  */
-public final class NetworkConditionsExtended extends NetworkConditions {
+@SuppressWarnings("unused")
+public final class NetworkConditionsBasic extends NetworkConditions {
 
-    private TaskPreferences mTaskPreferences;
-
-    @RequiresPermission(permission.ACCESS_NETWORK_STATE)
-    public NetworkConditionsExtended(Context context) {
+    public NetworkConditionsBasic(Context context) {
         super(context);
-    }
-
-    public void setTaskPreferences(TaskPreferences taskPreferences) {
-        mTaskPreferences = taskPreferences;
-        // If there is a settings change, then trigger the onNetworkChange event just as in super()
-        mTaskPreferences.registerForSettingsChange(mNetworkChangeReceiver);
     }
 
     @Override
     protected boolean isConnected() {
-        ConnectivityManager connManager =
+        ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (mTaskPreferences == null || mTaskPreferences.wifiOnly()) {
-            NetworkInfo wifi = connManager.getActiveNetworkInfo();
-            return wifi != null && wifi.getType() == ConnectivityManager.TYPE_WIFI && wifi.isConnected();
-        } else {
-            NetworkInfo netInfo = connManager.getActiveNetworkInfo();
-            return netInfo != null && netInfo.isConnected();
-        }
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 }

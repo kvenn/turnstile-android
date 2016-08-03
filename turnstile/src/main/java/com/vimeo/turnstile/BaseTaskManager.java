@@ -34,8 +34,8 @@ import com.vimeo.turnstile.TaskConstants.ManagerEvent;
 import com.vimeo.turnstile.TaskConstants.TaskEvent;
 import com.vimeo.turnstile.async.NamedThreadFactory;
 import com.vimeo.turnstile.conditions.Conditions;
-import com.vimeo.turnstile.conditions.network.NetworkConditions;
-import com.vimeo.turnstile.conditions.network.NetworkConditionsExtended;
+import com.vimeo.turnstile.conditions.NetworkConditions;
+import com.vimeo.turnstile.conditions.NetworkConditionsExtended;
 import com.vimeo.turnstile.database.TaskCache;
 import com.vimeo.turnstile.database.TaskCallback;
 import com.vimeo.turnstile.database.TaskDatabase;
@@ -472,6 +472,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         }
     }
 
+    @Deprecated
     public void userPauseAll() {
         mIsPaused = true;
         mTaskPreferences.setIsPaused(true);
@@ -479,6 +480,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         broadcastManagerEvent(TaskConstants.EVENT_ALL_TASKS_PAUSED);
     }
 
+    @Deprecated
     public void userResumeAll() {
         if (!mIsPaused) {
             return;
