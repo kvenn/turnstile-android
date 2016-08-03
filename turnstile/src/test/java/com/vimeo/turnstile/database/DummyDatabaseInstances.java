@@ -7,7 +7,10 @@ import org.robolectric.RuntimeEnvironment;
 /**
  * Created by restainoa on 8/3/16.
  */
-class DummyDatabaseInstances {
+final class DummyDatabaseInstances {
+
+    private DummyDatabaseInstances() {
+    }
 
     public static TaskDatabase<UnitTestBaseTask> newDatabase() {
         return new TaskDatabase<>(RuntimeEnvironment.application, "test", UnitTestBaseTask.class);
