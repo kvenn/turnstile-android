@@ -53,10 +53,6 @@ public final class TaskPreferences {
                 context.getSharedPreferences(TASK_PREFS + "_" + managerName, Context.MODE_PRIVATE);
     }
 
-    public synchronized boolean contains(String key) {
-        return mSharedPreferences.contains(key);
-    }
-
     /*
      * -----------------------------------------------------------------------------------------------------
      * Getters/Setters
@@ -70,7 +66,10 @@ public final class TaskPreferences {
     }
 
     synchronized void setIsPaused(boolean isPaused) {
-        mSharedPreferences.edit().putBoolean(IS_PAUSED, isPaused).apply();
+        if (isPaused() != isPaused) {
+            mSharedPreferences.edit().putBoolean(IS_PAUSED, isPaused).apply();
+            broadcastSettingsChange();
+        }
     }
 
     /**
