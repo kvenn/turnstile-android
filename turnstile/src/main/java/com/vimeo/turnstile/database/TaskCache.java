@@ -30,7 +30,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import com.vimeo.turnstile.BaseTask;
-import com.vimeo.turnstile.TaskConstants;
 import com.vimeo.turnstile.TaskLogger;
 
 import java.util.ArrayList;
@@ -47,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by kylevenn on 2/22/16.
  */
 public final class TaskCache<T extends BaseTask> {
+
+    private static final int NOT_FOUND = -1;
 
     @NonNull
     private final ConcurrentHashMap<String, T> mTaskMap = new ConcurrentHashMap<>();
@@ -370,7 +371,7 @@ public final class TaskCache<T extends BaseTask> {
         // it wont work (returns -1). This happens in the case where our initial commit fails but the upload finishes
         // and that 'complete' commit succeeds (and then we try to commit again).
         long insertId = mDatabase.insert(task);
-        if (insertId == TaskConstants.NOT_FOUND) {
+        if (insertId == NOT_FOUND) {
             TaskLogger.getLogger().d("Task already exists in database");
         }
     }

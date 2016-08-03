@@ -33,9 +33,7 @@ import java.lang.annotation.RetentionPolicy;
  * <p/>
  * Created by kylevenn on 2/23/16.
  */
-public final class TaskConstants {
-
-    public static final int NOT_FOUND = -1;
+final class TaskConstants {
 
     public static final String TASK_BROADCAST = "TASK_BROADCAST_";
 
