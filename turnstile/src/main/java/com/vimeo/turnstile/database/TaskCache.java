@@ -237,8 +237,9 @@ public final class TaskCache<T extends BaseTask> {
      * @param callback the callback that will be notified of
      *                 success or failure of insertion into
      *                 the cache.
+     * @return false if the task was invalid, true otherwise.
      */
-    public void insert(@NonNull final T task, @Nullable final TaskCallback callback) {
+    public boolean insert(@NonNull final T task, @Nullable final TaskCallback callback) {
         if (task.getId() == null) {
             if (callback != null) {
                 mMainThread.post(new Runnable() {
@@ -248,7 +249,7 @@ public final class TaskCache<T extends BaseTask> {
                     }
                 });
             }
-            return;
+            return false;
         }
         // Only put in this new task if there isn't one already in there.
         putIfAbsent(task);
@@ -282,6 +283,7 @@ public final class TaskCache<T extends BaseTask> {
                 }
             }
         });
+        return true;
     }
 
     /**

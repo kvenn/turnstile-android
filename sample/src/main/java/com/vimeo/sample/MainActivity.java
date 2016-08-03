@@ -1,20 +1,20 @@
 package com.vimeo.sample;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
-import com.vimeo.turnstile.TaskConstants;
+import com.vimeo.turnstile.BaseTaskManager.TaskEventListener;
 import com.vimeo.turnstile.database.TaskCallback;
+import com.vimeo.turnstile.models.TaskError;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleTaskManager mTaskManager;
     private static final TaskIdGenerator sTaskIdGenerator = new TaskIdGenerator();
     private TextView mResultText;
+    private ScrollView mScrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,27 +33,37 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.notification_click, Toast.LENGTH_LONG).show();
         }
 
+        mScrollView = (ScrollView) findViewById(R.id.scroll_view);
         mResultText = (TextView) findViewById(R.id.text_view_task_result);
 
         final TextView cacheView = (TextView) findViewById(R.id.text_view_cache);
 
         mTaskManager = SimpleTaskManager.getInstance();
-        mTaskManager.registerReceiver(new BroadcastReceiver() {
+        mTaskManager.registerTaskEventListener(new TaskEventListener<SimpleTask>() {
             @Override
-            public void onReceive(Context context, Intent intent) {
+            public void onStarted(@NonNull SimpleTask task) {
+                addTextLog(getString(R.string.started_text, task.getId()));
+            }
+
+            @Override
+            public void onFailure(@NonNull SimpleTask task, @NonNull TaskError error) {
+                addTextLog(getString(R.string.failure_to_run_text, task.getId()));
+            }
+
+            @Override
+            public void onCanceled(@NonNull SimpleTask task) {
+                addTextLog(getString(R.string.canceled_text, task.getId()));
+            }
+
+            @Override
+            public void onSuccess(@NonNull SimpleTask task) {
+                addTextLog(getString(R.string.result_text, task.getId()));
+            }
+
+            @Override
+            public void onAdded(@NonNull SimpleTask task) {
                 //noinspection ConstantConditions
                 cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
-                String event = intent.getStringExtra(TaskConstants.TASK_EVENT);
-                switch (event) {
-                    case TaskConstants.EVENT_SUCCESS:
-                        addTextLog(getString(R.string.result_text,
-                                             intent.getStringExtra(TaskConstants.TASK_ID)));
-                        break;
-                    case TaskConstants.EVENT_FAILURE:
-                        addTextLog(getString(R.string.failure_text,
-                                             intent.getStringExtra(TaskConstants.TASK_ID)));
-                        break;
-                }
             }
         });
 
@@ -67,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 mTaskManager.addTask(task, new TaskCallback() {
                     @Override
                     public void onSuccess() {
-                        addTextLog(getString(R.string.started_text, task.getId()));
+                        addTextLog(getString(R.string.added_text, task.getId()));
                     }
 
                     @Override
@@ -83,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mTaskManager.cancelAll();
+                //noinspection ConstantConditions
+                cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
             }
         });
     }
@@ -91,6 +104,12 @@ public class MainActivity extends AppCompatActivity {
         String currentText = mResultText.getText().toString();
         currentText = currentText + "\n" + text;
         mResultText.setText(currentText);
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.smoothScrollTo(0, mResultText.getBottom());
+            }
+        });
     }
 
     @Override

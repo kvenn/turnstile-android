@@ -23,15 +23,15 @@
  */
 package com.vimeo.turnstile;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.vimeo.turnstile.BaseTask.TaskStateListener;
+import com.vimeo.turnstile.TaskConstants.ManagerEvent;
+import com.vimeo.turnstile.TaskConstants.TaskEvent;
 import com.vimeo.turnstile.async.NamedThreadFactory;
 import com.vimeo.turnstile.conditions.Conditions;
 import com.vimeo.turnstile.conditions.network.NetworkConditions;
@@ -43,8 +43,10 @@ import com.vimeo.turnstile.models.TaskError;
 import com.vimeo.turnstile.preferences.BootPreferences;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -205,7 +207,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     private final TaskStateListener<T> mTaskListener = new TaskStateListener<T>(getTaskClass()) {
         @Override
         void onTaskStarted(@NonNull T task) {
-
+            broadcastOtherTaskEvent(task, TaskConstants.EVENT_STARTED);
         }
 
         @Override
@@ -222,13 +224,13 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
             // Just remove from the task pool. We're currently executing in that thread.
             sTaskPool.remove(task.getId());
-            broadcastEvent(task.getId(), TaskConstants.EVENT_SUCCESS);
+            broadcastOtherTaskEvent(task, TaskConstants.EVENT_SUCCESS);
             serviceCleanup(true);
         }
 
         @Override
         public void onTaskProgress(@NonNull T task, int progress) {
-            broadcastProgress(task.getId(), progress);
+            broadcastTaskProgressEvent(task, progress);
         }
 
         @Override
@@ -244,7 +246,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
             // Just remove from the task pool. We're currently executing in that thread.
             sTaskPool.remove(task.getId());
-            broadcastFailure(task.getId(), task.getTaskError());
+            broadcastTaskFailureEvent(task, task.getTaskError());
             serviceCleanup(false);
         }
     };
@@ -366,10 +368,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      *                 of success and error.
      */
     public void addTask(@NonNull T task, @Nullable TaskCallback callback) {
-        broadcastEvent(task.getId(), TaskConstants.EVENT_ADDED);
-        // Kick off the upload stream
-        addTask(task, false);
-        mTaskCache.insert(task, callback);
+        if (mTaskCache.insert(task, callback)) {
+            broadcastOtherTaskEvent(task, TaskConstants.EVENT_ADDED);
+            // Kick off the upload stream
+            addTask(task, false);
+        }
     }
 
     // Eventually with failure states we can call this with isResume = false to start over
@@ -414,11 +417,14 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         // returns true if it was actually in the db
         mTaskCache.remove(id);
         // Since we just cancelled a thread, let's check to see if it still has any left
-        broadcastEvent(id, TaskConstants.EVENT_CANCELLED);
+        if (task != null) {
+            broadcastOtherTaskEvent(task, TaskConstants.EVENT_CANCELLED);
+        }
         serviceCleanup(false);
     }
 
     // Cancel all threads, truncate local db, TODO: delete call to server
+    // TODO this doesn't trigger cancel events, instead it triggers success events
     public void cancelAll() {
         removeAllFromTaskPool();
         mTaskCache.removeAll();
@@ -431,8 +437,9 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
             return;
         }
         T task = mTaskCache.get(taskId);
-        broadcastEvent(taskId, TaskConstants.EVENT_RETRYING);
+
         if (task != null) {
+            broadcastOtherTaskEvent(task, TaskConstants.EVENT_RETRYING);
             TaskLogger.getLogger().d("Retrying task with id: " + taskId);
             // Run the task again
             addTask(task, true);
@@ -469,7 +476,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mIsPaused = true;
         mTaskPreferences.setIsPaused(true);
         pauseAll();
-        broadcastEvent(TaskConstants.EVENT_ALL_TASKS_PAUSED);
+        broadcastManagerEvent(TaskConstants.EVENT_ALL_TASKS_PAUSED);
     }
 
     public void userResumeAll() {
@@ -480,7 +487,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mIsPaused = false;
         mTaskPreferences.setIsPaused(false);
         if (resumeAll()) {
-            broadcastEvent(TaskConstants.EVENT_ALL_TASKS_RESUMED);
+            broadcastManagerEvent(TaskConstants.EVENT_ALL_TASKS_RESUMED);
         }
     }
 
@@ -508,14 +515,14 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
     private void pauseForConditions() {
         TaskLogger.getLogger().d("Pause for network");
-        broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
+        broadcastManagerEvent(TaskConstants.EVENT_CONDITIONS_LOST);
         pauseAll();
     }
 
     private void resumeForConditions() {
         TaskLogger.getLogger().d("Resume for network");
         if (resumeAll()) {
-            broadcastEvent(TaskConstants.EVENT_NETWORK_RETURNED);
+            broadcastManagerEvent(TaskConstants.EVENT_CONDITIONS_RETURNED);
         }
     }
 
@@ -562,10 +569,10 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         // TODO: Update the notification 11/6/15 [KV]
         if (mIsPaused) {
             isSuspended = true;
-            broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
+            broadcastManagerEvent(TaskConstants.EVENT_CONDITIONS_LOST);
         } else if (!areDeviceConditionsMet()) {
             isSuspended = true;
-            broadcastEvent(TaskConstants.EVENT_NETWORK_LOST);
+            broadcastManagerEvent(TaskConstants.EVENT_CONDITIONS_LOST);
         }
         return isSuspended;
     }
@@ -623,9 +630,9 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
     private void killService(boolean taskCompleted) {
         if (taskCompleted) {
-            broadcastEvent(TaskConstants.EVENT_ALL_TASKS_FINISHED);
+            broadcastManagerEvent(TaskConstants.EVENT_ALL_TASKS_FINISHED);
         } else {
-            broadcastEvent(TaskConstants.EVENT_KILL_SERVICE);
+            broadcastManagerEvent(TaskConstants.EVENT_KILL_SERVICE);
         }
     }
     // </editor-fold>
@@ -702,41 +709,182 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         return TaskConstants.TASK_BROADCAST + "_" + getManagerName();
     }
 
-    public void registerReceiver(@NonNull BroadcastReceiver receiver) {
-        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(mContext);
-        localBroadcastManager.registerReceiver(receiver, new IntentFilter(getBroadcastString()));
+    public interface TasksEventListener {
+
+        void onManagerEvent(@ManagerEvent @NonNull String event);
+
+        void onTaskEvent(@TaskEvent @NonNull String event, @NonNull String id);
+
+        void onTaskProgress(@NonNull String id, int progress);
+
+        void onTaskError(@NonNull String id, @NonNull TaskError error);
+    }
+
+    public static abstract class ManagerEventListener {
+
+        public void onResumeIfNecessary() {
+        }
+
+        public void onAllTasksPaused() {
+        }
+
+        public void onAllTasksResumed() {
+        }
+
+        public void onAllTasksFinished() {
+        }
+
+        public void onKillService() {
+        }
+
+        public void onConditionsLost() {
+        }
+
+        public void onConditionsReturned() {
+        }
+
+        public void onAdditionalManagerEvent(@NonNull String event) {
+        }
+
+    }
+
+    public static abstract class TaskEventListener<T> {
+
+        public void onAdded(@NonNull T task) {
+        }
+
+        public void onStarted(@NonNull T task) {
+        }
+
+        public void onProgress(@NonNull T task, int progress) {
+        }
+
+        public void onSuccess(@NonNull T task) {
+        }
+
+        public void onCanceled(@NonNull T task) {
+        }
+
+        public void onFailure(@NonNull T task, @NonNull TaskError error) {
+        }
+
+        public void onRetry(@NonNull T task) {
+        }
+
+        public void onAdditionalTaskEvent(@NonNull T task, @NonNull String event) {
+        }
+
+    }
+
+    private final Set<TaskEventListener<T>> mTaskEventListeners = new HashSet<>();
+    private final Set<ManagerEventListener> mManagerEventListeners = new HashSet<>();
+
+    public synchronized void registerTaskEventListener(@NonNull TaskEventListener<T> listener) {
+        mTaskEventListeners.add(listener);
+    }
+
+    public synchronized void unregisterTaskEventListener(@NonNull TaskEventListener<T> listener) {
+        mTaskEventListeners.remove(listener);
+    }
+
+    public synchronized void registerManagerEventListener(@NonNull ManagerEventListener listener) {
+        mManagerEventListeners.add(listener);
+    }
+
+    public synchronized void unregisterManagerEventListener(@NonNull ManagerEventListener listener) {
+        mManagerEventListeners.remove(listener);
     }
 
     // Entire pool based events (paused, resumed)
-    public void broadcastEvent(@NonNull String event) {
-        Intent localIntent = new Intent(getBroadcastString());
-        localIntent.putExtra(TaskConstants.TASK_EVENT, event);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(localIntent);
+    public synchronized void broadcastManagerEvent(final @ManagerEvent @NonNull String event) {
+        BroadcastHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (ManagerEventListener listener : mManagerEventListeners) {
+                    switch (event) {
+                        case TaskConstants.EVENT_RESUME_IF_NECESSARY:
+                            listener.onResumeIfNecessary();
+                            break;
+                        case TaskConstants.EVENT_ALL_TASKS_FINISHED:
+                            listener.onAllTasksFinished();
+                            break;
+                        case TaskConstants.EVENT_KILL_SERVICE:
+                            listener.onKillService();
+                            break;
+                        case TaskConstants.EVENT_CONDITIONS_LOST:
+                            listener.onConditionsLost();
+                            break;
+                        case TaskConstants.EVENT_CONDITIONS_RETURNED:
+                            listener.onConditionsReturned();
+                            break;
+                        case TaskConstants.EVENT_ALL_TASKS_PAUSED:
+                            listener.onAllTasksPaused();
+                            break;
+                        case TaskConstants.EVENT_ALL_TASKS_RESUMED:
+                            listener.onAllTasksResumed();
+                            break;
+                        default:
+                            listener.onAdditionalManagerEvent(event);
+                            break;
+                    }
+                }
+            }
+        });
     }
 
-    // Task based events (added, succeeded, failed)
-    private void broadcastEvent(@NonNull String id, @NonNull String event) {
-        Intent localIntent = new Intent(getBroadcastString());
-        localIntent.putExtra(TaskConstants.TASK_EVENT, event);
-        localIntent.putExtra(TaskConstants.TASK_ID, id);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(localIntent);
+    private synchronized void broadcastOtherTaskEvent(final @NonNull T task,
+                                                      final @TaskEvent @NonNull String event) {
+        BroadcastHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (TaskEventListener<T> listener : mTaskEventListeners) {
+                    switch (event) {
+                        case TaskConstants.EVENT_STARTED:
+                            listener.onStarted(task);
+                            break;
+                        case TaskConstants.EVENT_SUCCESS:
+                            listener.onSuccess(task);
+                            break;
+                        case TaskConstants.EVENT_RETRYING:
+                            listener.onRetry(task);
+                            break;
+                        case TaskConstants.EVENT_ADDED:
+                            listener.onAdded(task);
+                            break;
+                        case TaskConstants.EVENT_CANCELLED:
+                            listener.onCanceled(task);
+                            break;
+                        default:
+                            listener.onAdditionalTaskEvent(task, event);
+                            break;
+                    }
+                }
+
+            }
+        });
     }
 
-    private void broadcastFailure(@NonNull String id, @NonNull TaskError error) {
-        Intent localIntent = new Intent(getBroadcastString());
-        localIntent.putExtra(TaskConstants.TASK_EVENT, TaskConstants.EVENT_FAILURE);
-        localIntent.putExtra(TaskConstants.TASK_ID, id);
-        localIntent.putExtra(TaskConstants.TASK_ERROR, error);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(localIntent);
+    private synchronized void broadcastTaskFailureEvent(final @NonNull T task,
+                                                        final @NonNull TaskError error) {
+        BroadcastHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (TaskEventListener<T> listener : mTaskEventListeners) {
+                    listener.onFailure(task, error);
+                }
+            }
+        });
     }
 
-    // Exclusively to relay progress for a task
-    private void broadcastProgress(@NonNull String id, int progress) {
-        Intent localIntent = new Intent(getBroadcastString());
-        localIntent.putExtra(TaskConstants.TASK_EVENT, TaskConstants.EVENT_PROGRESS);
-        localIntent.putExtra(TaskConstants.TASK_PROGRESS, progress);
-        localIntent.putExtra(TaskConstants.TASK_ID, id);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(localIntent);
+    private synchronized void broadcastTaskProgressEvent(final @NonNull T task, final int progress) {
+        BroadcastHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (TaskEventListener<T> listener : mTaskEventListeners) {
+                    listener.onProgress(task, progress);
+                }
+            }
+        });
     }
     // </editor-fold>
 }
