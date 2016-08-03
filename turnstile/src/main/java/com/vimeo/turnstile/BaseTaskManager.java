@@ -32,7 +32,6 @@ import android.text.TextUtils;
 import com.vimeo.turnstile.BaseTask.TaskStateListener;
 import com.vimeo.turnstile.TaskConstants.ManagerEvent;
 import com.vimeo.turnstile.TaskConstants.TaskEvent;
-import com.vimeo.turnstile.async.NamedThreadFactory;
 import com.vimeo.turnstile.conditions.Conditions;
 import com.vimeo.turnstile.conditions.NetworkConditions;
 import com.vimeo.turnstile.conditions.NetworkConditionsExtended;
@@ -121,6 +120,32 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
             mBuilderStartOnDeviceBoot = startOnDeviceBoot;
             return this;
         }
+    }
+
+    /**
+     * A ThreadFactory that can set the threads name.
+     * This is used by the {@link BaseTaskManager} in
+     * order to create a thread pool that intelligently
+     * names its threads based off the names of its tasks.
+     * <p/>
+     * Created by zetterstromk on 3/14/16.
+     */
+    private static final class NamedThreadFactory implements ThreadFactory {
+
+        @NonNull
+        private final String mThreadName;
+
+        public NamedThreadFactory(@NonNull String name) {
+            mThreadName = name;
+        }
+
+        @Override
+        public Thread newThread(@NonNull Runnable runnable) {
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setName(mThreadName);
+            return thread;
+        }
+
     }
 
     private static final String LOG_TAG = "BaseTaskManager";
