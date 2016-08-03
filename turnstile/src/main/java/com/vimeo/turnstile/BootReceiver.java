@@ -29,7 +29,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.RequiresPermission;
 
-import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.preferences.BootPreferences;
 
 /**
@@ -50,7 +49,7 @@ public final class BootReceiver extends BroadcastReceiver {
             // Reading SharedPreferences can take a little time initially since it requires reading from disk.
             // Since we don't want to slow down the user's device, we'll go onto a worker thread since there is
             // no benefit of this being synchronous. 3/2/16 [KV]
-            TaskDatabase.execute(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     for (Class serviceClass : BootPreferences.getServiceClasses(context)) {
@@ -60,7 +59,7 @@ public final class BootReceiver extends BroadcastReceiver {
                         context.startService(startServiceIntent);
                     }
                 }
-            });
+            }).start();
         }
     }
 }

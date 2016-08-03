@@ -38,7 +38,6 @@ import com.vimeo.turnstile.conditions.NetworkConditions;
 import com.vimeo.turnstile.conditions.NetworkConditionsExtended;
 import com.vimeo.turnstile.database.TaskCache;
 import com.vimeo.turnstile.database.TaskCallback;
-import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.models.TaskError;
 import com.vimeo.turnstile.preferences.BootPreferences;
 
@@ -198,9 +197,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mCachedExecutorService = Executors.newFixedThreadPool(MAX_ACTIVE_TASKS, namedThreadFactory);
 
         // ---- Persistence ----
-        TaskDatabase<T> database = new TaskDatabase<>(mContext, taskName, taskClass);
         // Synchronous load from SQLite. Not very performant but required for simplified in-memory cache
-        mTaskCache = new TaskCache<>(database);
+        mTaskCache = new TaskCache<>(mContext, taskName, taskClass);
 
         // ---- Boot Handling ----
         if (startOnDeviceBoot()) {

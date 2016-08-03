@@ -23,6 +23,7 @@
  */
 package com.vimeo.turnstile.database;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -74,8 +75,8 @@ public final class TaskCache<T extends BaseTask> {
     }
 
     @WorkerThread
-    public TaskCache(@NonNull TaskDatabase<T> database) {
-        mDatabase = database;
+    public TaskCache(@NonNull Context context, @NonNull String taskName, @NonNull Class<T> taskClass) {
+        mDatabase = new TaskDatabase<>(context, taskName, taskClass);
         List<T> tasks = mDatabase.getTasks(null);
         for (T task : tasks) {
             mTaskMap.put(task.getId(), task);

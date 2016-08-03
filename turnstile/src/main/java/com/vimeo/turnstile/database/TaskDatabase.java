@@ -49,7 +49,7 @@ import java.util.concurrent.Executors;
  * <p/>
  * Created by kylevenn on 2/10/16.
  */
-public class TaskDatabase<T extends BaseTask> {
+class TaskDatabase<T extends BaseTask> {
 
     private final static String LOG_TAG = "TaskDatabase";
 
