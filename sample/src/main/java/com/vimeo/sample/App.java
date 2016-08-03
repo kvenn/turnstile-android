@@ -5,10 +5,9 @@ import android.content.Intent;
 
 import com.vimeo.sample.tasks.SimpleConditions;
 import com.vimeo.sample.tasks.SimpleLogger;
-import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
+import com.vimeo.turnstile.BaseTaskManager;
 import com.vimeo.turnstile.TaskLogger;
-import com.vimeo.turnstile.TaskManagerBuilder;
 
 public class App extends Application {
 
@@ -19,7 +18,7 @@ public class App extends Application {
         super.onCreate();
 
         // Inject the components we want into the TaskManager
-        TaskManagerBuilder<SimpleTask> taskTaskManagerBuilder = new TaskManagerBuilder<>(this);
+        BaseTaskManager.Builder taskTaskManagerBuilder = new BaseTaskManager.Builder(this);
         taskTaskManagerBuilder.withConditions(new SimpleConditions());
         taskTaskManagerBuilder.withStartOnDeviceBoot(false);
 

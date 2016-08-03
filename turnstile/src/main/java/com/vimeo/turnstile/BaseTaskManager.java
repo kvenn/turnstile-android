@@ -72,6 +72,58 @@ import java.util.concurrent.ThreadFactory;
 @SuppressWarnings("unused")
 public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.Listener {
 
+    /**
+     * A class used to pass variables to the
+     * constructor of the {@link BaseTaskManager}.
+     * These variables are used by the manager
+     * internally.
+     */
+    public static final class Builder {
+
+        @NonNull
+        final Context mBuilderContext;
+        @NonNull
+        Conditions mBuilderConditions;
+        @Nullable
+        Intent mBuilderNotificationIntent;
+
+        boolean mBuilderStartOnDeviceBoot;
+
+        public Builder(@NonNull Context context) {
+            mBuilderContext = context;
+            // Set the default to be the extended network util
+            mBuilderConditions = new NetworkConditionsExtended(mBuilderContext);
+            mBuilderStartOnDeviceBoot = false;
+        }
+
+        @NonNull
+        public Builder withConditions(@NonNull Conditions conditions) {
+            mBuilderConditions = conditions;
+            return this;
+        }
+
+        @NonNull
+        public Builder withNotificationIntent(@Nullable Intent notificationIntent) {
+            mBuilderNotificationIntent = notificationIntent;
+            return this;
+        }
+
+        /**
+         * Use this if you'd like the task manager to
+         * resume its tasks when the devices first starts.
+         *
+         * @param startOnDeviceBoot true if you want the task
+         *                          manager to start on device
+         *                          boot, false otherwise. default
+         *                          is false.
+         */
+        @NonNull
+        public Builder withStartOnDeviceBoot(boolean startOnDeviceBoot) {
+            mBuilderStartOnDeviceBoot = startOnDeviceBoot;
+            return this;
+        }
+    }
+
     private static final String LOG_TAG = "BaseTaskManager";
     private static final int MAX_ACTIVE_TASKS = 3; // TODO: Should we up the maximum? 2/25/16 [KV]
 
@@ -119,17 +171,17 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      * -----------------------------------------------------------------------------------------------------
      */
     // <editor-fold desc="Initialization">
-    protected BaseTaskManager(@NonNull TaskManagerBuilder<T> taskManagerBuilder) {
+    protected BaseTaskManager(@NonNull Builder builder) {
         String taskName = getManagerName();
         Class<T> taskClass = getTaskClass();
         // Always use the application process - this context is a singleton itself which is the global
         // context of the process. Since the Service and App are in the same process, this shouldn't
         // be an issue.
-        mContext = taskManagerBuilder.mContext.getApplicationContext();
+        mContext = builder.mBuilderContext.getApplicationContext();
         // TODO: Make it so network util is optional so that we might have no reliance on network 3/2/16 [KV]
-        mConditions = taskManagerBuilder.mConditions;
-        mNotificationIntent = taskManagerBuilder.mNotificationIntent;
-        mStartOnDeviceBoot = taskManagerBuilder.mStartOnDeviceBoot;
+        mConditions = builder.mBuilderConditions;
+        mNotificationIntent = builder.mBuilderNotificationIntent;
+        mStartOnDeviceBoot = builder.mBuilderStartOnDeviceBoot;
 
         // Needs to be initialized with the manager name so that this instance is manager-specific
         mTaskPreferences = new TaskPreferences(mContext, taskName);

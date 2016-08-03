@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 
 import com.vimeo.turnstile.BaseTaskManager;
 import com.vimeo.turnstile.BaseTaskService;
-import com.vimeo.turnstile.TaskManagerBuilder;
 
 public class SimpleTaskManager extends BaseTaskManager<SimpleTask> {
 
@@ -20,12 +19,12 @@ public class SimpleTaskManager extends BaseTaskManager<SimpleTask> {
         return sInstance;
     }
 
-    public static void initialize(@NonNull TaskManagerBuilder<SimpleTask> taskManagerBuilder) {
-        sInstance = new SimpleTaskManager(taskManagerBuilder);
+    public static void initialize(@NonNull Builder builder) {
+        sInstance = new SimpleTaskManager(builder);
     }
 
-    protected SimpleTaskManager(@NonNull TaskManagerBuilder<SimpleTask> taskManagerBuilder) {
-        super(taskManagerBuilder);
+    protected SimpleTaskManager(@NonNull Builder builder) {
+        super(builder);
     }
 
     @Override
