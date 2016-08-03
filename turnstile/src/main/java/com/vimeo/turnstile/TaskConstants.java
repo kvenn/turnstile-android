@@ -67,7 +67,6 @@ public final class TaskConstants {
     public static final String EVENT_ADDED = "EVENT_ADDED";
     public static final String EVENT_STARTED = "EVENT_STARTED";
     public static final String EVENT_CANCELLED = "EVENT_CANCELLED";
-    public static final String EVENT_STARTED = "EVENT_STARTED";
 
     public static final String EVENT_RESUME_IF_NECESSARY = "EVENT_RESUME_IF_NECESSARY";
     public static final String EVENT_ALL_TASKS_FINISHED = "EVENT_ALL_TASKS_FINISHED";
