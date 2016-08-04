@@ -346,8 +346,11 @@ public abstract class BaseTask implements Serializable, Callable {
      * Marks task as ready and removes any errors. This happens when we are attempting a retry.
      */
     protected void updateStateForRetry() {
-        mState = TaskState.READY;
-        onTaskChange();
+        if (mState == TaskState.ERROR) {
+            // If there's an error, remove it to prep the task for retry
+            mState = TaskState.READY;
+            onTaskChange();
+        }
     }
 
     /**

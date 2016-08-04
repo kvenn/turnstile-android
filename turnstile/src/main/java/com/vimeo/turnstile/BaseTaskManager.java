@@ -450,7 +450,9 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
                 addTask(task, false);
             }
         } else {
-            retryTask(task.getId());
+            if (callback != null) {
+                callback.onFailure(new Exception("Task already added to database"));
+            }
         }
     }
 
