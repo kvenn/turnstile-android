@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.vimeo.sample.tasks.SimpleTask;
 import com.vimeo.sample.tasks.SimpleTaskManager;
 import com.vimeo.turnstile.BaseTaskManager.TaskEventListener;
+import com.vimeo.turnstile.UniqueIdGenerator;
 import com.vimeo.turnstile.database.TaskCallback;
 import com.vimeo.turnstile.models.TaskError;
 
@@ -20,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private SimpleTaskManager mTaskManager;
-    private static final TaskIdGenerator sTaskIdGenerator = new TaskIdGenerator();
     private TextView mResultText;
     private ScrollView mScrollView;
 
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_new_task).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                final SimpleTask task = new SimpleTask(sTaskIdGenerator.getId());
+                final SimpleTask task = new SimpleTask(UniqueIdGenerator.generateId());
                 mTaskManager.addTask(task, new TaskCallback() {
                     @Override
                     public void onSuccess() {

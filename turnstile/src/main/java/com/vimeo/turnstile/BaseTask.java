@@ -241,8 +241,12 @@ public abstract class BaseTask implements Serializable, Callable {
     // <editor-fold desc="Constructors">
 
     /**
-     * Most basic constructor with all requirements.
-     * If this constructor is used, the Tasks {@link TaskState} will default to {@link TaskState#READY}
+     * Basic constructor with all requirements.
+     * Tasks {@link TaskState} will default to {@link TaskState#READY}
+     * The id of the task must be unique.
+     *
+     * @param id The id of the task, must never be null, must
+     *           be unique, no exceptions.
      */
     public BaseTask(@NonNull String id) {
         mId = id;
