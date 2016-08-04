@@ -210,17 +210,15 @@ public final class TaskCache<T extends BaseTask> {
     }
 
     /**
-     * Determines if the cache has an entry
-     * with the specified id. This does not
-     * guarantee that there is a task with
-     * the same id in the map.
+     * Determines if the cache has a task
+     * with the specified id.
      *
      * @param id the id to check.
      * @return true if the cache contains
      * the id, false otherwise.
      */
-    public boolean containsKey(@NonNull String id) {
-        return mTaskMap.containsKey(id);
+    public boolean containsTask(@NonNull String id) {
+        return mTaskMap.get(id) != null;
     }
     // </editor-fold>
 

@@ -443,10 +443,14 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      *                 of success and error.
      */
     public void addTask(@NonNull T task, @Nullable TaskCallback callback) {
-        if (mTaskCache.insert(task, callback)) {
-            broadcastOtherTaskEvent(task, TaskConstants.EVENT_ADDED);
-            // Kick off the upload stream
-            addTask(task, false);
+        if (!mTaskCache.containsTask(task.getId())) {
+            if (mTaskCache.insert(task, callback)) {
+                broadcastOtherTaskEvent(task, TaskConstants.EVENT_ADDED);
+                // Kick off the upload stream
+                addTask(task, false);
+            }
+        } else {
+            retryTask(task.getId());
         }
     }
 
@@ -484,7 +488,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      * Cancel the thread for that video and remove from local db
      * NOTE: this doesn't delete the video from the server.
      */
-    public void cancelTask(String id) {
+    public void cancelTask(@NonNull String id) {
         T task = mTaskCache.get(id);
         TaskLogger.getLogger().d("Task canceled with id: " + id);
         removeFromTaskPool(id);
@@ -506,7 +510,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         serviceCleanup(false);
     }
 
-    public void retryTask(String taskId) {
+    public void retryTask(@NonNull String taskId) {
         if (sTaskPool.containsKey(taskId)) {
             // If the task pool contains the id, that means it's already been retried
             return;
@@ -517,6 +521,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
             broadcastOtherTaskEvent(task, TaskConstants.EVENT_RETRYING);
             TaskLogger.getLogger().d("Retrying task with id: " + taskId);
             // Run the task again
+            task.updateStateForRetry();
             addTask(task, true);
         } else {
             // The task that we're trying to retry isn't in the local db. That shouldn't be possible
@@ -539,7 +544,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         sTaskPool.clear();
     }
 
-    protected static void removeFromTaskPool(String id) {
+    protected static void removeFromTaskPool(@NonNull String id) {
         if (sTaskPool.containsKey(id)) {
             Future taskFuture = sTaskPool.get(id);
             taskFuture.cancel(true);
@@ -698,7 +703,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         }
     }
 
-    public void startService() {
+    protected void startService() {
         // Call this method when we know the service should be running
         // (we just added a task or we know there are unfinished tasks).
         Intent startServiceIntent = new Intent(mContext, getServiceClass());
