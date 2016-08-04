@@ -205,7 +205,7 @@ public final class TaskCache<T extends BaseTask> {
      * task is not in the cache.
      */
     @Nullable
-    public T get(@Nullable String taskId) {
+    public T get(@NonNull String taskId) {
         return mTaskMap.get(taskId);
     }
 
