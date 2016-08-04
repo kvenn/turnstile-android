@@ -23,6 +23,7 @@
  */
 package com.vimeo.turnstile.database;
 
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.NonNull;
@@ -104,6 +105,7 @@ class SqlHelper {
 
     public SQLiteStatement getUpdateForPropertyStatement(String id, SqlProperty property, String value,
                                                          @Nullable String additionalWhere) {
+        id = DatabaseUtils.sqlEscapeString(id);
         StringBuilder builder = new StringBuilder("UPDATE ").append(tableName)
                 .append(" SET ")
                 .append(property.columnName)
@@ -112,7 +114,7 @@ class SqlHelper {
                 .append(" WHERE ")
                 .append(primaryKeyColumnName)
                 .append("=")
-                .append(wrapString(id));
+                .append(id);
         if (additionalWhere != null) {
             builder.append(" AND ").append(additionalWhere);
         }
@@ -154,7 +156,8 @@ class SqlHelper {
 		           COALESCE('Susan Boyle', (SELECT name FROM Employee WHERE id = 1)),
 		           COALESCE((SELECT role FROM Employee WHERE id = 1), 'Benchwarmer'));
      */
-    public SQLiteStatement getUpsertStatement(String id) {
+    public SQLiteStatement getUpsertStatement(@NonNull String id) {
+        id = DatabaseUtils.sqlEscapeString(id);
         StringBuilder builder = new StringBuilder("INSERT OR REPLACE INTO ").append(tableName);
         builder.append("(");
         for (int i = 0; i < columnCount; i++) {
@@ -177,7 +180,7 @@ class SqlHelper {
                     .append(" WHERE ")
                     .append(primaryKeyColumnName)
                     .append("=")
-                    .append(wrapString(id))
+                    .append(id)
                     .append("))");
         }
         builder.append(")");
@@ -279,10 +282,6 @@ class SqlHelper {
             builder.append(",?");
         }
         return builder.toString();
-    }
-
-    private static String wrapString(String string) {
-        return "'" + string + "'";
     }
 
     public void truncate() {

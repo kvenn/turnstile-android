@@ -25,6 +25,7 @@ package com.vimeo.turnstile.database;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.NonNull;
@@ -125,6 +126,7 @@ class TaskDatabase<T extends BaseTask> {
         if (id.isEmpty()) {
             return null;
         }
+        id = DatabaseUtils.sqlEscapeString(id);
         List<T> tasks = getTasks(ID_COLUMN.columnName + " = " + id);
         if (tasks.size() > 1) {
             throw new IllegalStateException("More than one task with the same id: " + id);
