@@ -247,6 +247,8 @@ public abstract class BaseTask implements Serializable, Callable {
      *
      * @param id The id of the task, must never be null, must
      *           be unique, no exceptions.
+     * @see UniqueIdGenerator UniqueIdGenerator,
+     * if you want a default way to generate ids.
      */
     public BaseTask(@NonNull String id) {
         mId = id;

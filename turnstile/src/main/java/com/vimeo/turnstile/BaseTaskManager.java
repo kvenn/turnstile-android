@@ -282,7 +282,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     private final TaskStateListener<T> mTaskListener = new TaskStateListener<T>(getTaskClass()) {
         @Override
         void onTaskStarted(@NonNull T task) {
-            broadcastOtherTaskEvent(task, TaskConstants.EVENT_STARTED);
+            broadcastTaskEvent(task, TaskConstants.EVENT_STARTED);
         }
 
         @Override
@@ -299,7 +299,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
             // Just remove from the task pool. We're currently executing in that thread.
             sTaskPool.remove(task.getId());
-            broadcastOtherTaskEvent(task, TaskConstants.EVENT_SUCCESS);
+            broadcastTaskEvent(task, TaskConstants.EVENT_SUCCESS);
             serviceCleanup(true);
         }
 
@@ -321,7 +321,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
             // Just remove from the task pool. We're currently executing in that thread.
             sTaskPool.remove(task.getId());
-            broadcastTaskFailureEvent(task, task.getTaskError());
+            broadcastTaskFailureEvent(task, taskError);
             serviceCleanup(false);
         }
     };
@@ -445,9 +445,9 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     public void addTask(@NonNull T task, @Nullable TaskCallback callback) {
         if (!mTaskCache.containsTask(task.getId())) {
             if (mTaskCache.insert(task, callback)) {
-                broadcastOtherTaskEvent(task, TaskConstants.EVENT_ADDED);
-                // Kick off the upload stream
-                addTask(task, false);
+                broadcastTaskEvent(task, TaskConstants.EVENT_ADDED);
+                // Starts task execution
+                startTask(task, false);
             }
         } else {
             if (callback != null) {
@@ -457,9 +457,9 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     }
 
     // Eventually with failure states we can call this with isResume = false to start over
-    private void addTask(@NonNull T task, boolean isResume) {
+    private void startTask(@NonNull T task, boolean isResume) {
         if (TextUtils.isEmpty(task.getId())) {
-            TaskLogger.getLogger().e("Task with an empty ID passed to addTask. Will not add it.");
+            TaskLogger.getLogger().e("Task with an empty ID passed to startTask. Will not add it.");
             return;
         }
 
@@ -487,8 +487,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     }
 
     /**
-     * Cancel the thread for that video and remove from local db
-     * NOTE: this doesn't delete the video from the server.
+     * Cancel the thread for that task and remove it from
+     * the local database. Note that the task won't be
+     * notified and will just be rudely interrupted, so
+     * if you need to do cleanup, you will need to do that
+     * manually.
      */
     public void cancelTask(@NonNull String id) {
         T task = mTaskCache.get(id);
@@ -499,7 +502,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mTaskCache.remove(id);
         // Since we just cancelled a thread, let's check to see if it still has any left
         if (task != null) {
-            broadcastOtherTaskEvent(task, TaskConstants.EVENT_CANCELLED);
+            broadcastTaskEvent(task, TaskConstants.EVENT_CANCELLED);
         }
         serviceCleanup(false);
     }
@@ -520,11 +523,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         T task = mTaskCache.get(taskId);
 
         if (task != null) {
-            broadcastOtherTaskEvent(task, TaskConstants.EVENT_RETRYING);
+            broadcastTaskEvent(task, TaskConstants.EVENT_RETRYING);
             TaskLogger.getLogger().d("Retrying task with id: " + taskId);
             // Run the task again
             task.updateStateForRetry();
-            addTask(task, true);
+            startTask(task, true);
         } else {
             // The task that we're trying to retry isn't in the local db. That shouldn't be possible
             // so we should log it.
@@ -639,7 +642,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
         // We then re-add all these unfinished tasks
         for (T task : mTaskCache.getTasksToRun()) {
-            addTask(task, true);
+            startTask(task, true);
         }
         isResuming = false;
 
@@ -690,7 +693,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
             for (T task : getTasksToRun()) {
                 if (!isInTaskPool(task.getId())) {
                     // If there is an unfinished task that isn't in the task pool, we'll have to add it
-                    addTask(task, true);
+                    startTask(task, true);
                     addTaskCalled = true;
                 }
             }
@@ -793,17 +796,10 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         return TaskConstants.TASK_BROADCAST + "_" + getManagerName();
     }
 
-    public interface TasksEventListener {
-
-        void onManagerEvent(@ManagerEvent @NonNull String event);
-
-        void onTaskEvent(@TaskEvent @NonNull String event, @NonNull String id);
-
-        void onTaskProgress(@NonNull String id, int progress);
-
-        void onTaskError(@NonNull String id, @NonNull TaskError error);
-    }
-
+    /**
+     * A listener for manager type events. Register it with
+     * the manager to be notified when these events occur.
+     */
     public static abstract class ManagerEventListener {
 
         public void onResumeIfNecessary() {
@@ -832,6 +828,10 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
 
     }
 
+    /**
+     * A listener for task lifecycle events. Register it with
+     * the manager to be notified when these events occur.
+     */
     public static abstract class TaskEventListener<T> {
 
         public void onAdded(@NonNull T task) {
@@ -916,8 +916,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         });
     }
 
-    private synchronized void broadcastOtherTaskEvent(final @NonNull T task,
-                                                      final @TaskEvent @NonNull String event) {
+    private synchronized void broadcastTaskEvent(final @NonNull T task,
+                                                 final @TaskEvent @NonNull String event) {
         BroadcastHandler.post(new Runnable() {
             @Override
             public void run() {
