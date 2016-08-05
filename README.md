@@ -73,8 +73,16 @@ Then in your `build.gradle` use:
 compile project(':turnstile-android:turnstile')
 ```
 
-## TODO: Section going over example
-Cover utilization of each feature as well as initialization. Reference the code in the example for ease of understanding.
+## API/Example usage
+
+API explanation will reference the sample app, please see that code to understand it fully.
+
+The API consists of 5 main classes, `BaseTaskManager`, `BaseTaskService`, `BaseTask`, `TaskLogger`, and `Conditions`.
+- `BaseTaskManager`: This is the class responsible for running the tasks and tieing everything together. You must extend this in order to provide a name for the manage and to provide the task class. Your task manager must be a singleton, since a reference is required by your `BaseTaskService` class. See below for more information on initialization.
+- `BaseTask`: The task that you wish to run. The main thing you should override is the `execute()` method. This is where you should do all your work, and it is called on a background thread. You should call task lifecycle events where appropriate, such as `onTaskProgress(int progress)`, `onTaskFailure(TaskError error)`, and `onTaskCompleted`.
+- `BaseTaskService`: This is the service that the `BaseTaskManager` will be held by and on which all work will be done. You must extend this class and supply your `BaseTaskManager` instance, and notification setup data such as icons, strings, and ids.
+- `TaskLogger`: TaskLogger is used to log messages and debugging information by the library and by default uses `DefaultLogger`, which uses `android.util.Log`. If you want to provide your own logging solution, or turn off or on certain logs, you can supply your own logger by implementing the `TaskLogger.Logger` interface and supplying that to `TaskLogger.setLogger(Logger logger)`.
+- `Conditions`: This is an interface used by the library to determine whether or not the device conditions are suitable to run the tasks, e.g. network availability. You can use one of the default ones supplied, such as `NetworkConditionsBasic`, which checks for network connectivity, or `NetworkConditionsExtended`, which checks for wifi connectivity. You can also extend `NetworkConditions` to create your own network based conditions, or go completely custom by implementing your own `Conditions`, e.g. you don't want to run tasks if the battery is too low.
 
 ## Contact US
 
