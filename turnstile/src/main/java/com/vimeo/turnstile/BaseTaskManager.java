@@ -333,8 +333,24 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      * -----------------------------------------------------------------------------------------------------
      */
     // <editor-fold desc="Task Accessors">
+
+    /**
+     * Returns the task with the specific id.
+     * If the id passed is null, then null
+     * will be returned.
+     *
+     * @param taskId the id of the task, can
+     *               be null, but if null is
+     *               passed, then null will be
+     *               returned.
+     * @return the task, or null if one cannot
+     * be found that matches the id.
+     */
     @Nullable
-    public final T getTask(String taskId) {
+    public final T getTask(@Nullable String taskId) {
+        if (taskId == null) {
+            return null;
+        }
         return mTaskCache.get(taskId);
     }
 
