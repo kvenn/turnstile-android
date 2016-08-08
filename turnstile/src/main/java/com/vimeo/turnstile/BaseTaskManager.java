@@ -896,7 +896,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     }
 
     // Entire pool based events (paused, resumed)
-    public synchronized void broadcastManagerEvent(final @ManagerEvent @NonNull String event) {
+    private synchronized void broadcastManagerEvent(final @ManagerEvent @NonNull String event) {
         BroadcastHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -932,6 +932,17 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         });
     }
 
+    public synchronized void broadcastAdditionalManagerEvent(@NonNull final String event) {
+        BroadcastHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (ManagerEventListener listener : mManagerEventListeners) {
+                    listener.onAdditionalManagerEvent(event);
+                }
+            }
+        });
+    }
+
     private synchronized void broadcastTaskEvent(final @NonNull T task,
                                                  final @TaskEvent @NonNull String event) {
         BroadcastHandler.post(new Runnable() {
@@ -960,6 +971,18 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
                     }
                 }
 
+            }
+        });
+    }
+
+    public synchronized void broadcastAdditionalTaskEvent(@NonNull final T task,
+                                                          @NonNull final String event) {
+        BroadcastHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (TaskEventListener<T> listener : mTaskEventListeners) {
+                    listener.onAdditionalTaskEvent(task, event);
+                }
             }
         });
     }
