@@ -167,6 +167,9 @@ public final class TaskCache<T extends BaseTask> {
      */
     @Nullable
     public T get(@Nullable String taskId) {
+        if (taskId == null) {
+            return null;
+        }
         return mTaskMap.get(taskId);
     }
 
