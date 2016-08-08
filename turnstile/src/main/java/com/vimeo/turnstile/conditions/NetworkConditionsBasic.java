@@ -21,37 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.async;
+package com.vimeo.turnstile.conditions;
 
-import android.support.annotation.NonNull;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
-import com.vimeo.turnstile.BaseTaskManager;
+import com.vimeo.turnstile.conditions.NetworkConditions;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
- * A ThreadFactory that can set the threads name.
- * This is used by the {@link BaseTaskManager} in
- * order to create a thread pool that intelligently
- * names its threads based off the names of its tasks.
+ * Default implementation for network conditions to observe network
+ * events {@link #isConnected()} will return true if there is any
+ * network (wifi, data, etc.)
  * <p/>
- * Created by zetterstromk on 3/14/16.
+ * Created by kylevenn on 9/8/2015
  */
-public final class NamedThreadFactory implements ThreadFactory {
+@SuppressWarnings("unused")
+public final class NetworkConditionsBasic extends NetworkConditions {
 
-    @NonNull
-    private final String mThreadName;
-
-    public NamedThreadFactory(@NonNull String name) {
-        mThreadName = name;
+    public NetworkConditionsBasic(Context context) {
+        super(context);
     }
 
     @Override
-    public Thread newThread(@NonNull Runnable runnable) {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setName(mThreadName);
-        return thread;
+    protected boolean isConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 }

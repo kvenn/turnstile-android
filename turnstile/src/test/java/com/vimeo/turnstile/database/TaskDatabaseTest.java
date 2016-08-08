@@ -1,8 +1,7 @@
-package com.vimeo.turnstile;
+package com.vimeo.turnstile.database;
 
 import com.vimeo.turnstile.BaseTask.TaskState;
-import com.vimeo.turnstile.database.TaskDatabase;
-import com.vimeo.turnstile.dummy.DummyClassInstances;
+import com.vimeo.turnstile.BaseUnitTest;
 import com.vimeo.turnstile.dummy.UnitTestBaseTask;
 
 import org.junit.Assert;
@@ -18,14 +17,14 @@ public class TaskDatabaseTest extends BaseUnitTest {
 
     @Before
     public void setup() {
-        mDatabase = DummyClassInstances.newDatabase();
+        mDatabase = DummyDatabaseInstances.newDatabase();
     }
 
     @Test
     public void testInsert_doesInsertWork() throws Exception {
         UnitTestBaseTask task = UnitTestBaseTask.newTask();
         mDatabase.insert(task);
-        UnitTestBaseTask task1 = mDatabase.getTask(task.mId);
+        UnitTestBaseTask task1 = mDatabase.getTask(task.getId());
         Assert.assertNotNull(task1);
         Assert.assertTrue(task.getId().equals(task1.getId()));
     }
@@ -36,7 +35,7 @@ public class TaskDatabaseTest extends BaseUnitTest {
         UnitTestBaseTask task = UnitTestBaseTask.newTask();
         Assert.assertTrue(task.getTaskState() != TaskState.ERROR);
         mDatabase.upsert(task);
-        UnitTestBaseTask task1 = mDatabase.getTask(task.mId);
+        UnitTestBaseTask task1 = mDatabase.getTask(task.getId());
         Assert.assertNotNull(task1);
         Assert.assertTrue(task.getId().equals(task1.getId()));
         Assert.assertTrue(task.getTaskState() == TaskState.READY);
@@ -47,7 +46,7 @@ public class TaskDatabaseTest extends BaseUnitTest {
         mDatabase.insert(task2);
         task2.changeState();
         mDatabase.upsert(task2);
-        UnitTestBaseTask task3 = mDatabase.getTask(task2.mId);
+        UnitTestBaseTask task3 = mDatabase.getTask(task2.getId());
         Assert.assertNotNull(task3);
         Assert.assertTrue(task2.getId().equals(task3.getId()));
         Assert.assertTrue(task2.getTaskState() == TaskState.ERROR);

@@ -23,10 +23,7 @@
  */
 package com.vimeo.turnstile;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 
 /**
@@ -40,7 +37,6 @@ import android.content.SharedPreferences;
 public final class TaskPreferences {
 
     private static final String TASK_PREFS = "TASK_PREFS";
-
     private static final String IS_PAUSED = "IS_PAUSED";
     private static final String WIFI_ONLY = "WIFI_ONLY";
 
@@ -57,10 +53,6 @@ public final class TaskPreferences {
                 context.getSharedPreferences(TASK_PREFS + "_" + managerName, Context.MODE_PRIVATE);
     }
 
-    public synchronized boolean contains(String key) {
-        return mSharedPreferences.contains(key);
-    }
-
     /*
      * -----------------------------------------------------------------------------------------------------
      * Getters/Setters
@@ -69,12 +61,15 @@ public final class TaskPreferences {
     // <editor-fold desc="Getters/Setters">
 
     /** isPaused refers to if the queue was paused or resumed - this can be user or network driven */
-    public synchronized boolean isPaused() {
+    synchronized boolean isPaused() {
         return mSharedPreferences.getBoolean(IS_PAUSED, false);
     }
 
-    public synchronized void setIsPaused(boolean isPaused) {
-        mSharedPreferences.edit().putBoolean(IS_PAUSED, isPaused).apply();
+    synchronized void setIsPaused(boolean isPaused) {
+        if (isPaused() != isPaused) {
+            mSharedPreferences.edit().putBoolean(IS_PAUSED, isPaused).apply();
+            broadcastSettingsChange();
+        }
     }
 
     /**
@@ -100,21 +95,21 @@ public final class TaskPreferences {
      * -----------------------------------------------------------------------------------------------------
      */
     // <editor-fold desc="Broadcasts">
-    private static final String NETWORK_SETTING_CHANGE = "NETWORK_SETTING_CHANGE";
+    public interface OnSettingsChangedListener {
 
-    private String getNetworkBroadcastFilter() {
-        return NETWORK_SETTING_CHANGE + "_" + mManagerName;
+        void onSettingChanged();
     }
+
+    private OnSettingsChangedListener mListener;
 
     private void broadcastSettingsChange() {
-        Intent localIntent = new Intent(getNetworkBroadcastFilter());
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(localIntent);
+        if (mListener != null) {
+            mListener.onSettingChanged();
+        }
     }
 
-    public void registerForSettingsChange(BroadcastReceiver receiver) {
-        LocalBroadcastManager.getInstance(mContext)
-                .registerReceiver(receiver, new IntentFilter(getNetworkBroadcastFilter()));
-
+    public void registerForSettingsChange(OnSettingsChangedListener receiver) {
+        mListener = receiver;
     }
     // </editor-fold>
 }

@@ -23,14 +23,17 @@
  */
 package com.vimeo.turnstile;
 
+import android.support.annotation.StringDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Constants used throughout the library.
  * <p/>
  * Created by kylevenn on 2/23/16.
  */
-public final class TaskConstants {
-
-    public static final int NOT_FOUND = -1;
+final class TaskConstants {
 
     public static final String TASK_BROADCAST = "TASK_BROADCAST_";
 
@@ -41,6 +44,20 @@ public final class TaskConstants {
     public static final String TASK_ERROR = "TASK_ERROR";
 
     // ---- Broadcast Events ----
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({
+            EVENT_PROGRESS, EVENT_SUCCESS, EVENT_FAILURE, EVENT_RETRYING, EVENT_ADDED, EVENT_CANCELLED,
+            EVENT_STARTED
+    })
+    public @interface TaskEvent {}
+
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({
+            EVENT_RESUME_IF_NECESSARY, EVENT_ALL_TASKS_FINISHED, EVENT_KILL_SERVICE, EVENT_CONDITIONS_LOST,
+            EVENT_CONDITIONS_RETURNED, EVENT_ALL_TASKS_PAUSED, EVENT_ALL_TASKS_RESUMED
+    })
+    public @interface ManagerEvent {}
+
     public static final String EVENT_PROGRESS = "EVENT_PROGRESS";
     public static final String EVENT_SUCCESS = "EVENT_SUCCESS";
     public static final String EVENT_FAILURE = "EVENT_FAILURE";
@@ -52,8 +69,8 @@ public final class TaskConstants {
     public static final String EVENT_RESUME_IF_NECESSARY = "EVENT_RESUME_IF_NECESSARY";
     public static final String EVENT_ALL_TASKS_FINISHED = "EVENT_ALL_TASKS_FINISHED";
     public static final String EVENT_KILL_SERVICE = "KILL_SERVICE";
-    public static final String EVENT_NETWORK_LOST = "EVENT_NETWORK_LOST";
-    public static final String EVENT_NETWORK_RETURNED = "EVENT_NETWORK_RETURNED";
+    public static final String EVENT_CONDITIONS_LOST = "EVENT_CONDITIONS_LOST";
+    public static final String EVENT_CONDITIONS_RETURNED = "EVENT_CONDITIONS_RETURNED";
     public static final String EVENT_ALL_TASKS_PAUSED = "EVENT_ALL_TASKS_PAUSED";
     public static final String EVENT_ALL_TASKS_RESUMED = "EVENT_ALL_TASKS_RESUMED";
 

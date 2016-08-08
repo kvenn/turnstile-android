@@ -27,15 +27,16 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.PluralsRes;
 import android.support.annotation.StringRes;
+
+import com.vimeo.turnstile.BaseTaskManager.ManagerEventListener;
+import com.vimeo.turnstile.BaseTaskManager.TaskEventListener;
 
 /**
  * The sole purpose of this {@link Service} is to ensure that our application
@@ -84,7 +85,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     @Override
     public final void onCreate() {
         super.onCreate();
-        TaskLogger.d("Task Service onCreate");
+        TaskLogger.getLogger().d("Task Service onCreate");
         // The application will have already initialized the manager at this point 2/29/16 [KV]
         mTaskManager = getManagerInstance();
 
@@ -107,7 +108,7 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
     // - BootReceived or TaskAdded
     @Override
     public final int onStartCommand(Intent intent, int flags, int startId) {
-        TaskLogger.d("Task Service onStartCommand");
+        TaskLogger.getLogger().d("Task Service onStartCommand");
 
         // TODO: This is going to get called A LOT because we issue startService commands for every added task as
         // well as every single state change. Is that bad? We can make optimizations if performance is an issue or
@@ -367,75 +368,80 @@ public abstract class BaseTaskService<T extends BaseTask> extends Service {
      * -----------------------------------------------------------------------------------------------------
      */
     // <editor-fold desc="Receivers">
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    private final TaskEventListener<T> mTaskEventListener = new TaskEventListener<T>() {
         @Override
-        @MainThread
-        public void onReceive(Context context, Intent intent) {
-            // Always on ui thread
-            // This should only modify the notification, other activities that want to listen to these events
-            // can do it themselves
-            String event = intent.getStringExtra(TaskConstants.TASK_EVENT);
-            String taskId;
-            switch (event) {
-                case TaskConstants.EVENT_NETWORK_LOST:
-                    setNotificationLostNetwork();
-                    break;
-                case TaskConstants.EVENT_NETWORK_RETURNED:
-                    returnToProgressState();
-                    break;
-                case TaskConstants.EVENT_ADDED:
-                    taskId = intent.getStringExtra(TaskConstants.TASK_ID);
-                    T task = mTaskManager.getTask(taskId);
-                    if (task != null) {
-                        if (task.shouldRun()) {
-                            // If the task is supposed to be running, represent that in the notification
-                            taskAdded();
-                        }
-                    }
-                    // no-op
-                    break;
-                case TaskConstants.EVENT_PROGRESS:
-                    taskId = intent.getStringExtra(TaskConstants.TASK_ID);
-                    if (mTaskIdToListenOn == null) {
-                        mTaskIdToListenOn = taskId;
-                    }
-                    if (mTaskIdToListenOn.equals(taskId)) {
-                        int progress = intent.getIntExtra(TaskConstants.TASK_PROGRESS, 0);
-                        updateProgress(progress);
-                    }
-                    break;
-                case TaskConstants.EVENT_SUCCESS:
-                    mFinishedCount++;
-                    updateProgressContentText();
-                    taskId = intent.getStringExtra(TaskConstants.TASK_ID);
-                    if (mTaskIdToListenOn != null && mTaskIdToListenOn.equals(taskId)) {
-                        // Null out this task id since we're no longer listening for it 3/2/16 [KV]
-                        mTaskIdToListenOn = null;
-                    }
-                    // Remove any if one is already showing
-                    mNotificationManager.cancel(mFinishedNotificationId);
-                    showNotificationFinish();
-                    break;
-                case TaskConstants.EVENT_FAILURE:
-                    // TODO: Make this a real notification 3/1/16 [KV]
-                    //toast("Upload Failure");
-                    break;
-                case TaskConstants.EVENT_ALL_TASKS_FINISHED:
-                case TaskConstants.EVENT_KILL_SERVICE:
-                    killService();
-                    break;
-                default:
-                    handleAdditionalEvents(event);
+        public void onProgress(@NonNull T task, int progress) {
+            if (mTaskIdToListenOn == null) {
+                mTaskIdToListenOn = task.getId();
             }
+            if (mTaskIdToListenOn.equals(task.getId())) {
+                updateProgress(progress);
+            }
+        }
+
+        @Override
+        public void onSuccess(@NonNull T task) {
+            mFinishedCount++;
+            updateProgressContentText();
+            if (mTaskIdToListenOn != null && mTaskIdToListenOn.equals(task.getId())) {
+                // Null out this task id since we're no longer listening for it 3/2/16 [KV]
+                mTaskIdToListenOn = null;
+            }
+            // Remove any if one is already showing
+            mNotificationManager.cancel(mFinishedNotificationId);
+            showNotificationFinish();
+        }
+
+        @Override
+        public void onAdded(@NonNull T task) {
+            if (task.shouldRun()) {
+                // If the task is supposed to be running, represent that in the notification
+                taskAdded();
+            }
+        }
+
+        @Override
+        public void onAdditionalTaskEvent(@NonNull T task, @NonNull String event) {
+            handleAdditionalEvents(event);
+        }
+
+    };
+
+    private final ManagerEventListener mManagerEventListener = new ManagerEventListener() {
+        @Override
+        public void onAllTasksFinished() {
+            killService();
+        }
+
+        @Override
+        public void onKillService() {
+            killService();
+        }
+
+        @Override
+        public void onConditionsLost() {
+            setNotificationLostNetwork();
+        }
+
+        @Override
+        public void onConditionsReturned() {
+            returnToProgressState();
+        }
+
+        @Override
+        public void onAdditionalManagerEvent(@NonNull String event) {
+            handleAdditionalEvents(event);
         }
     };
 
     private void registerReceivers() {
-        mTaskManager.registerReceiver(mReceiver);
+        mTaskManager.registerTaskEventListener(mTaskEventListener);
+        mTaskManager.registerManagerEventListener(mManagerEventListener);
     }
 
     private void unregisterReceivers() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        mTaskManager.unregisterTaskEventListener(mTaskEventListener);
+        mTaskManager.unregisterManagerEventListener(mManagerEventListener);
     }
     // </editor-fold>
 }
