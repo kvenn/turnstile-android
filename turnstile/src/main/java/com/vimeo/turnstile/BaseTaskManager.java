@@ -348,9 +348,6 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      */
     @Nullable
     public final T getTask(@Nullable String taskId) {
-        if (taskId == null) {
-            return null;
-        }
         return mTaskCache.get(taskId);
     }
 

@@ -198,14 +198,17 @@ public final class TaskCache<T extends BaseTask> {
      * the specified id.
      *
      * @param taskId the id of the task to
-     *               retrieve, must not be
-     *               null.
+     *               retrieve.
      * @return the task with the specified
      * id, may be null if the specified
-     * task is not in the cache.
+     * task is not in the cache or if the
+     * id passed is null.
      */
     @Nullable
-    public T get(@NonNull String taskId) {
+    public T get(@Nullable String taskId) {
+        if (taskId == null) {
+            return null;
+        }
         return mTaskMap.get(taskId);
     }
 
