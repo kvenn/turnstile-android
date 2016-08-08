@@ -77,11 +77,11 @@ compile project(':turnstile-android:turnstile')
 
 #### API
 
-API explanation will reference the sample app, please see that code to understand it fully.
+All examples below are in reference to the code found in the [sample app](sample/src/main/java/com/vimeo/sample). It is encouraged that you copy the java classes from the sample folder into your app to help get started. Refer to the [initialization section](#initialization) to continue getting set up. API explanation will reference the sample app, please see that code to understand it fully.
 
-The API consists of 5 main classes, `BaseTaskManager`, `BaseTaskService`, `BaseTask`, `TaskLogger`, and `Conditions`.
-- `BaseTaskManager`: This is the class responsible for running the tasks and tying everything together. You must extend this in order to provide a name for the manage and to provide the task class. Your task manager must be a singleton, since a reference is required by your `BaseTaskService` class. See below for more information on initialization.
-- `BaseTask`: The task that you wish to run. The main thing you should override is the `execute()` method. This is where you should do all your work, and it is called on a background thread. You should call task lifecycle events where appropriate, such as `onTaskProgress(int progress)`, `onTaskFailure(TaskError error)`, and `onTaskCompleted`.
+The API consists of 3 main classes that you will need to extend, `BaseTaskManager`, `BaseTaskService`, and `BaseTask`; and two optional classes you can supply for more functionality, `TaskLogger` and `Conditions`.
+- `BaseTaskManager`: This is the class responsible for running the tasks and tying everything together. You must extend this in order to provide any additional task handling logic and convenience APIs. Your task manager must be a singleton, since a reference is required by your `BaseTaskService` class. See below for more information on initialization.
+- `BaseTask`: The task that you wish to run. All your work will be done in the `execute()` method on a background thread. This is where you should do all your work, and it is called on a background thread. You should call task lifecycle events where appropriate, such as `onTaskProgress(int progress)`, `onTaskFailure(TaskError error)`, and `onTaskCompleted`.
 - `BaseTaskService`: This is the service that the `BaseTaskManager` will be held by and on which all work will be done. You must extend this class and supply your `BaseTaskManager` instance, and notification setup data such as icons, strings, and ids.
 - `TaskLogger`: TaskLogger is used to log messages and debugging information by the library and by default uses `DefaultLogger`, which uses `android.util.Log`. If you want to provide your own logging solution, or turn off or on certain logs, you can supply your own logger by implementing the `TaskLogger.Logger` interface and supplying that to `TaskLogger.setLogger(Logger logger)`.
 - `Conditions`: This is an interface used by the library to determine whether or not the device conditions are suitable to run the tasks, e.g. network availability. You can use one of the default ones supplied, such as `NetworkConditionsBasic`, which checks for network connectivity, or `NetworkConditionsExtended`, which checks for wifi connectivity. You can also extend `NetworkConditions` to create your own network based conditions, or go completely custom by implementing your own `Conditions`, e.g. you don't want to run tasks if the battery is too low.
@@ -90,7 +90,7 @@ The API consists of 5 main classes, `BaseTaskManager`, `BaseTaskService`, `BaseT
 
 ##### Constructing `BaseTaskManager`
 
-Your `BaseTaskManager` should be a singleton, and must also be constructed by injecting the `BaseTaskManager.Builder` class into the constructor. See the Sample app for a simple implementation of this:
+Your `BaseTaskManager` should be a singleton, and must also be constructed by injecting the `BaseTaskManager.Builder` class into the constructor. See the Sample app for a [simple implementation]()https://github.com/vimeo/turnstile-android/blob/master/sample/src/main/java/com/vimeo/sample/tasks/SimpleTaskManager.java of this:
 
 ```java
 @Nullable
