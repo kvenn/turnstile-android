@@ -57,11 +57,11 @@ public class TaskError implements Serializable {
     }
 
     public TaskError(@NonNull String domain, int code, @NonNull String message,
-                     @Nullable Exception exception) {
+                     @Nullable Throwable exception) {
         mDomain = domain;
         mCode = code;
         mMessage = message;
-        mException = exception;
+        setException(exception);
     }
 
     // <editor-fold desc="Setters/Getters">
@@ -96,8 +96,8 @@ public class TaskError implements Serializable {
         return mException;
     }
 
-    public void setException(@Nullable Exception exception) {
-        mException = exception;
+    public void setException(@Nullable Throwable exception) {
+        mException = new Exception(exception);
     }
     // </editor-fold>
 
