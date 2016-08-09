@@ -37,6 +37,7 @@ import org.junit.Test;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -91,6 +92,11 @@ public class TaskCacheUnitTest extends BaseUnitTest {
         });
 
         assertNotNull(mTaskCache.get(task.getId()));
+    }
+
+    @Test
+    public void get_doesNullReturnNull() throws Exception {
+        assertNull(mTaskCache.get(null));
     }
 
 }
