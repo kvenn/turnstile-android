@@ -9,7 +9,7 @@ turnstile is an abstract task queue which allows for long running, parallel task
 * [Getting Started](#getting-started)
     - [Gradle](#gradle)
     - [Submodule](#submodule)
-* TODO: Put in a section going over the example
+* [Example/API](#example)
 * [Contact Us](#contact-us)
     - [Found an Issue?](#found-an-issue)
     - [Want to Contribute?](#want-to-contribute)
@@ -73,7 +73,7 @@ Then in your `build.gradle` use:
 compile project(':turnstile-android:turnstile')
 ```
 
-## API/Example usage
+## Example
 
 #### API
 
@@ -81,16 +81,18 @@ All examples below are in reference to the code found in the [sample app](sample
 
 The API consists of 3 main classes that you will need to extend, `BaseTaskManager`, `BaseTaskService`, and `BaseTask`; and two optional classes you can supply for more functionality, `TaskLogger` and `Conditions`.
 - `BaseTaskManager`: This is the class responsible for running the tasks and tying everything together. You must extend this in order to provide any additional task handling logic and convenience APIs. Your task manager must be a singleton, since a reference is required by your `BaseTaskService` class. See below for more information on initialization.
-- `BaseTask`: The task that you wish to run. All your work will be done in the `execute()` method on a background thread. This is where you should do all your work, and it is called on a background thread. You should call task lifecycle events where appropriate, such as `onTaskProgress(int progress)`, `onTaskFailure(TaskError error)`, and `onTaskCompleted`.
+- `BaseTask`: The task that you wish to run. All your work will be done in the `execute()` method on a background thread. You should call task lifecycle events where appropriate, such as `onTaskProgress(int progress)`, `onTaskFailure(TaskError error)`, and `onTaskCompleted`.
 - `BaseTaskService`: This is the service that the `BaseTaskManager` will be held by and on which all work will be done. You must extend this class and supply your `BaseTaskManager` instance, and notification setup data such as icons, strings, and ids.
 - `TaskLogger`: TaskLogger is used to log messages and debugging information by the library and by default uses `DefaultLogger`, which uses `android.util.Log`. If you want to provide your own logging solution, or turn off or on certain logs, you can supply your own logger by implementing the `TaskLogger.Logger` interface and supplying that to `TaskLogger.setLogger(Logger logger)`.
 - `Conditions`: This is an interface used by the library to determine whether or not the device conditions are suitable to run the tasks, e.g. network availability. You can use one of the default ones supplied, such as `NetworkConditionsBasic`, which checks for network connectivity, or `NetworkConditionsExtended`, which checks for wifi connectivity. You can also extend `NetworkConditions` to create your own network based conditions, or go completely custom by implementing your own `Conditions`, e.g. you don't want to run tasks if the battery is too low.
+
+The `BaseTaskManager` controls the execution of the `BaseTask`s as specified by the `Conditions`. A singleton reference to the `BaseTaskManager` is held by the `BaseTaskService` to ensure that it isn't garbage collected so it can be as resilient as possible.
 
 #### Initialization
 
 ##### Constructing `BaseTaskManager`
 
-Your `BaseTaskManager` should be a singleton, and must also be constructed by injecting the `BaseTaskManager.Builder` class into the constructor. See the Sample app for a [simple implementation]()https://github.com/vimeo/turnstile-android/blob/master/sample/src/main/java/com/vimeo/sample/tasks/SimpleTaskManager.java of this:
+Your `BaseTaskManager` should be a singleton, and must also be constructed by injecting the `BaseTaskManager.Builder` class into the constructor. See the Sample app for a [simple implementation](https://github.com/vimeo/turnstile-android/blob/master/sample/src/main/java/com/vimeo/sample/tasks/SimpleTaskManager.java) of this:
 
 ```java
 @Nullable
@@ -166,7 +168,7 @@ TaskLogger.setLogger(new SimpleLogger());
 
 ##### Adding and listening to tasks
 
-Now that everything has been set up, you want to add a task and listen to its lifecycle events while your app is alive:
+Now that everything has been set up, you want to add a task and listen to its lifecycle events while your app is alive. You can use this to relay task events including task progress, failure, completion, and others:
 
 ```java
 SimpleTaskManager taskManager = SimpleTaskManager.getInstance();
