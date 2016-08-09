@@ -25,6 +25,7 @@ package com.vimeo.turnstile.database;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.NonNull;
@@ -36,8 +37,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.vimeo.turnstile.BaseTask;
 import com.vimeo.turnstile.BaseTask.TaskState;
-import com.vimeo.turnstile.database.SqlHelper.SqlProperty;
 import com.vimeo.turnstile.TaskLogger;
+import com.vimeo.turnstile.database.SqlHelper.SqlProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ import java.util.concurrent.Executors;
  * <p/>
  * Created by kylevenn on 2/10/16.
  */
-public class TaskDatabase<T extends BaseTask> {
+class TaskDatabase<T extends BaseTask> {
 
     private final static String LOG_TAG = "TaskDatabase";
 
@@ -101,8 +102,8 @@ public class TaskDatabase<T extends BaseTask> {
 
         String baseTaskJson = mGsonSerializer.toJson(task);
         stmt.bindString(TASK_COLUMN.bindColumn, baseTaskJson);
-        TaskLogger.d(LOG_TAG, "BIND FOR: " + task.getId());
-        TaskLogger.d(LOG_TAG + "_verbose", baseTaskJson);
+        TaskLogger.getLogger().d("BIND FOR: " + task.getId());
+        TaskLogger.getLogger().d(baseTaskJson);
     }
 
     @WorkerThread
@@ -125,6 +126,7 @@ public class TaskDatabase<T extends BaseTask> {
         if (id.isEmpty()) {
             return null;
         }
+        id = DatabaseUtils.sqlEscapeString(id);
         List<T> tasks = getTasks(ID_COLUMN.columnName + " = " + id);
         if (tasks.size() > 1) {
             throw new IllegalStateException("More than one task with the same id: " + id);
@@ -201,11 +203,11 @@ public class TaskDatabase<T extends BaseTask> {
         synchronized (stmt) {
             stmt.clearBindings();
             bindValues(stmt, task);
-            TaskLogger.d("INSERT: " + stmt.toString());
+            TaskLogger.getLogger().d("INSERT: " + stmt.toString());
             id = stmt.executeInsert();
         }
         // TODO: Do some logging or send it back! 2/10/16 [KV]
-        TaskLogger.d(LOG_TAG, "INSERT COMPLETE " + id);
+        TaskLogger.getLogger().d("INSERT COMPLETE " + id);
         return id;
     }
 
@@ -230,10 +232,10 @@ public class TaskDatabase<T extends BaseTask> {
         synchronized (stmt) {
             stmt.clearBindings();
             bindValues(stmt, task);
-            TaskLogger.d("UPSERT: " + stmt.toString());
+            TaskLogger.getLogger().d("UPSERT: " + stmt.toString());
             id = stmt.executeInsert();
         }
-        TaskLogger.d(LOG_TAG, "UPSERT COMPLETE " + id);
+        TaskLogger.getLogger().d("UPSERT COMPLETE " + id);
         return id;
     }
 

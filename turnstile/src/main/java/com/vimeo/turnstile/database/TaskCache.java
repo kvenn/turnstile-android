@@ -23,6 +23,7 @@
  */
 package com.vimeo.turnstile.database;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -30,7 +31,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import com.vimeo.turnstile.BaseTask;
-import com.vimeo.turnstile.TaskConstants;
 import com.vimeo.turnstile.TaskLogger;
 
 import java.util.ArrayList;
@@ -47,6 +47,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by kylevenn on 2/22/16.
  */
 public final class TaskCache<T extends BaseTask> {
+
+    private static final int NOT_FOUND = -1;
 
     @NonNull
     private final ConcurrentHashMap<String, T> mTaskMap = new ConcurrentHashMap<>();
@@ -73,8 +75,8 @@ public final class TaskCache<T extends BaseTask> {
     }
 
     @WorkerThread
-    public TaskCache(@NonNull TaskDatabase<T> database) {
-        mDatabase = database;
+    public TaskCache(@NonNull Context context, @NonNull String taskName, @NonNull Class<T> taskClass) {
+        mDatabase = new TaskDatabase<>(context, taskName, taskClass);
         List<T> tasks = mDatabase.getTasks(null);
         for (T task : tasks) {
             mTaskMap.put(task.getId(), task);
@@ -196,29 +198,30 @@ public final class TaskCache<T extends BaseTask> {
      * the specified id.
      *
      * @param taskId the id of the task to
-     *               retrieve, must not be
-     *               null.
+     *               retrieve.
      * @return the task with the specified
      * id, may be null if the specified
-     * task is not in the cache.
+     * task is not in the cache or if the
+     * id passed is null.
      */
     @Nullable
     public T get(@Nullable String taskId) {
+        if (taskId == null) {
+            return null;
+        }
         return mTaskMap.get(taskId);
     }
 
     /**
-     * Determines if the cache has an entry
-     * with the specified id. This does not
-     * guarantee that there is a task with
-     * the same id in the map.
+     * Determines if the cache has a task
+     * with the specified id.
      *
      * @param id the id to check.
      * @return true if the cache contains
      * the id, false otherwise.
      */
-    public boolean containsKey(@NonNull String id) {
-        return mTaskMap.containsKey(id);
+    public boolean containsTask(@NonNull String id) {
+        return mTaskMap.get(id) != null;
     }
     // </editor-fold>
 
@@ -237,8 +240,9 @@ public final class TaskCache<T extends BaseTask> {
      * @param callback the callback that will be notified of
      *                 success or failure of insertion into
      *                 the cache.
+     * @return false if the task was invalid, true otherwise.
      */
-    public void insert(@NonNull final T task, @Nullable final TaskCallback callback) {
+    public boolean insert(@NonNull final T task, @Nullable final TaskCallback callback) {
         if (task.getId() == null) {
             if (callback != null) {
                 mMainThread.post(new Runnable() {
@@ -248,7 +252,7 @@ public final class TaskCache<T extends BaseTask> {
                     }
                 });
             }
-            return;
+            return false;
         }
         // Only put in this new task if there isn't one already in there.
         putIfAbsent(task);
@@ -282,6 +286,7 @@ public final class TaskCache<T extends BaseTask> {
                 }
             }
         });
+        return true;
     }
 
     /**
@@ -296,7 +301,7 @@ public final class TaskCache<T extends BaseTask> {
      */
     public void upsert(@NonNull final T task) {
         if (task.getId() == null) {
-            TaskLogger.e("Task passed to upsert without an ID.");
+            TaskLogger.getLogger().e("Task passed to upsert without an ID.");
             return;
         }
         // This will replace the current task in the cache (or 'put' it if it's not there)
@@ -361,15 +366,15 @@ public final class TaskCache<T extends BaseTask> {
     @WorkerThread
     private void insertToDatabase(@NonNull T task) {
         if (task.getId() == null) {
-            TaskLogger.e("Task passed to insertToDatabase without an ID.");
+            TaskLogger.getLogger().e("Task passed to insertToDatabase without an ID.");
             return;
         }
         // This insert has an OR IGNORE clause. That means if we try to insert a value that already exists,
         // it wont work (returns -1). This happens in the case where our initial commit fails but the upload finishes
         // and that 'complete' commit succeeds (and then we try to commit again).
         long insertId = mDatabase.insert(task);
-        if (insertId == TaskConstants.NOT_FOUND) {
-            TaskLogger.d("Task already exists in database");
+        if (insertId == NOT_FOUND) {
+            TaskLogger.getLogger().d("Task already exists in database");
         }
     }
     // </editor-fold>

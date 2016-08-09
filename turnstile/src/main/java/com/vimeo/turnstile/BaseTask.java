@@ -230,7 +230,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * The Unix Timestamp for when this task was first added
      */
     @SerializedName("created_at")
-    protected long mCreatedTimeMillis;
+    protected final long mCreatedTimeMillis;
 
     private volatile boolean mIsRunning;
     // </editor-fold>
@@ -241,21 +241,18 @@ public abstract class BaseTask implements Serializable, Callable {
     // <editor-fold desc="Constructors">
 
     /**
-     * Most basic constructor with all requirements.
-     * If this constructor is used, the Tasks {@link TaskState} will default to {@link TaskState#READY}
+     * Basic constructor with all requirements.
+     * Tasks {@link TaskState} will default to {@link TaskState#READY}
+     * The id of the task must be unique.
+     *
+     * @param id The id of the task, must never be null, must
+     *           be unique, no exceptions.
+     * @see UniqueIdGenerator UniqueIdGenerator,
+     * if you want a default way to generate ids.
      */
     public BaseTask(@NonNull String id) {
         mId = id;
         mCreatedTimeMillis = System.currentTimeMillis();
-    }
-
-    /**
-     * Optionally initialize the task with a {@link TaskState} and created time (for initialization from database)
-     */
-    public BaseTask(@NonNull String id, TaskState taskState, long createdTimeMillis) {
-        mId = id;
-        mState = taskState;
-        mCreatedTimeMillis = createdTimeMillis;
     }
     // </editor-fold>
 
@@ -292,12 +289,13 @@ public abstract class BaseTask implements Serializable, Callable {
 
     @Override
     public Object call() throws Exception {
+        onTaskStarted();
         mIsRunning = true;
         if (mIsRetry) {
-            TaskLogger.d("Task Resumed " + mId);
+            TaskLogger.getLogger().d("Task Resumed " + mId);
             retry();
         } else {
-            TaskLogger.d("Task Started For First Time " + mId);
+            TaskLogger.getLogger().d("Task Started For First Time " + mId);
             execute();
         }
         mIsRunning = false;
@@ -362,7 +360,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * Should be called by the implementation of
      * BaseTask when the task begins executing.
      */
-    protected void onTaskStarted() {
+    private void onTaskStarted() {
         if (mStateListener != null) {
             mStateListener.notifyOnTaskStarted(this);
         }
@@ -427,7 +425,7 @@ public abstract class BaseTask implements Serializable, Callable {
     // -----------------------------------------------------------------------------------------------------
     // <editor-fold desc="Getters">
     @NonNull
-    public final String getId() {
+    public synchronized final String getId() {
         return mId;
     }
 
@@ -437,7 +435,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return true if task state equals {@link TaskState#COMPLETE},
      * false otherwise.
      */
-    public boolean isComplete() {
+    public synchronized boolean isComplete() {
         return mState == TaskState.COMPLETE;
     }
 
@@ -447,7 +445,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return true if task state equals {@link TaskState#ERROR},
      * false otherwise.
      */
-    public boolean isError() {
+    public synchronized boolean isError() {
         return mState == TaskState.ERROR;
     }
 
@@ -457,7 +455,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return true if task state equals {@link TaskState#READY},
      * false otherwise.
      */
-    public boolean isReady() {
+    public synchronized boolean isReady() {
         return mState == TaskState.READY;
     }
 
@@ -467,7 +465,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return the error, nullable.
      */
     @Nullable
-    public final TaskError getTaskError() {
+    public synchronized final TaskError getTaskError() {
         return mError;
     }
 
@@ -477,7 +475,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return the task state, non null.
      */
     @NonNull
-    public final TaskState getTaskState() {
+    public synchronized final TaskState getTaskState() {
         return mState;
     }
 
@@ -487,7 +485,7 @@ public abstract class BaseTask implements Serializable, Callable {
      * @return returns the time in milliseconds that the
      * task was created.
      */
-    public final long getCreatedTimeMillis() {
+    public synchronized final long getCreatedTimeMillis() {
         return mCreatedTimeMillis;
     }
 
@@ -497,7 +495,7 @@ public abstract class BaseTask implements Serializable, Callable {
      *
      * @return progress out of 100
      */
-    public final int getProgress() {
+    public synchronized final int getProgress() {
         return mProgress;
     }
     // </editor-fold>

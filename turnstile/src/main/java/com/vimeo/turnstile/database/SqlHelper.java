@@ -23,6 +23,7 @@
  */
 package com.vimeo.turnstile.database;
 
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.NonNull;
@@ -93,17 +94,18 @@ class SqlHelper {
             }
         }
         builder.append(" );");
-        TaskLogger.d("CREATE: " + builder.toString());
+        TaskLogger.getLogger().d("CREATE: " + builder.toString());
         return builder.toString();
     }
 
     public static String drop(String tableToDrop) {
-        TaskLogger.d("DROP: " + tableToDrop);
+        TaskLogger.getLogger().d("DROP: " + tableToDrop);
         return "DROP TABLE IF EXISTS " + tableToDrop;
     }
 
     public SQLiteStatement getUpdateForPropertyStatement(String id, SqlProperty property, String value,
                                                          @Nullable String additionalWhere) {
+        id = DatabaseUtils.sqlEscapeString(id);
         StringBuilder builder = new StringBuilder("UPDATE ").append(tableName)
                 .append(" SET ")
                 .append(property.columnName)
@@ -112,7 +114,7 @@ class SqlHelper {
                 .append(" WHERE ")
                 .append(primaryKeyColumnName)
                 .append("=")
-                .append(wrapString(id));
+                .append(id);
         if (additionalWhere != null) {
             builder.append(" AND ").append(additionalWhere);
         }
@@ -137,7 +139,7 @@ class SqlHelper {
         }
         if (where.isEmpty()) {
             // This should never be empty ever
-            TaskLogger.w("where empty in update statement");
+            TaskLogger.getLogger().w("where empty in update statement");
         } else {
             builder.append(" WHERE ").append(where);
         }
@@ -154,7 +156,8 @@ class SqlHelper {
 		           COALESCE('Susan Boyle', (SELECT name FROM Employee WHERE id = 1)),
 		           COALESCE((SELECT role FROM Employee WHERE id = 1), 'Benchwarmer'));
      */
-    public SQLiteStatement getUpsertStatement(String id) {
+    public SQLiteStatement getUpsertStatement(@NonNull String id) {
+        id = DatabaseUtils.sqlEscapeString(id);
         StringBuilder builder = new StringBuilder("INSERT OR REPLACE INTO ").append(tableName);
         builder.append("(");
         for (int i = 0; i < columnCount; i++) {
@@ -177,7 +180,7 @@ class SqlHelper {
                     .append(" WHERE ")
                     .append(primaryKeyColumnName)
                     .append("=")
-                    .append(wrapString(id))
+                    .append(id)
                     .append("))");
         }
         builder.append(")");
@@ -261,7 +264,7 @@ class SqlHelper {
         if (limit != null) {
             builder.append(" LIMIT ").append(limit);
         }
-        TaskLogger.d("SELECT: " + builder.toString());
+        TaskLogger.getLogger().d("SELECT: " + builder.toString());
         return builder.toString();
     }
 
@@ -279,10 +282,6 @@ class SqlHelper {
             builder.append(",?");
         }
         return builder.toString();
-    }
-
-    private static String wrapString(String string) {
-        return "'" + string + "'";
     }
 
     public void truncate() {

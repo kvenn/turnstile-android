@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.conditions.network;
+package com.vimeo.turnstile.conditions;
 
 import android.Manifest;
 import android.Manifest.permission;
@@ -30,10 +30,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresPermission;
 
 import com.vimeo.turnstile.TaskLogger;
-import com.vimeo.turnstile.conditions.Conditions;
 
 /**
  * Interface which you can implement if you want to provide a custom
@@ -44,11 +44,11 @@ import com.vimeo.turnstile.conditions.Conditions;
 public abstract class NetworkConditions implements Conditions {
 
     final Context mContext;
-    private Conditions.Listener mListener;
+    Conditions.Listener mListener;
     final BroadcastReceiver mNetworkChangeReceiver;
 
     @RequiresPermission(permission.ACCESS_NETWORK_STATE)
-    public NetworkConditions(Context context) {
+    public NetworkConditions(@NonNull Context context) {
         mContext = context;
 
         // Receiver that just tells this class to tell the listener that something changed
@@ -56,7 +56,7 @@ public abstract class NetworkConditions implements Conditions {
             @Override
             public void onReceive(Context ctx, Intent intent) {
                 if (mListener == null) {
-                    TaskLogger.w("Null listener in network util extended");
+                    TaskLogger.getLogger().w("Null listener in network util extended");
                     return;
                 }
                 mListener.onConditionsChange(isConnected());

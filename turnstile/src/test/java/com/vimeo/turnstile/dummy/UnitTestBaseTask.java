@@ -17,10 +17,6 @@ public final class UnitTestBaseTask extends BaseTask {
         super(id);
     }
 
-    private UnitTestBaseTask(String id, TaskState taskState, long createdTimeMillis) {
-        super(id, taskState, createdTimeMillis);
-    }
-
     public void changeState() {
         mState = TaskState.ERROR;
     }

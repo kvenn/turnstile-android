@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.vimeo.turnstile.conditions.network;
+package com.vimeo.turnstile.conditions;
 
 import android.Manifest.permission;
 import android.content.Context;
@@ -29,7 +29,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.RequiresPermission;
 
+import com.vimeo.turnstile.TaskLogger;
 import com.vimeo.turnstile.TaskPreferences;
+import com.vimeo.turnstile.TaskPreferences.OnSettingsChangedListener;
 
 
 /**
@@ -54,7 +56,16 @@ public final class NetworkConditionsExtended extends NetworkConditions {
     public void setTaskPreferences(TaskPreferences taskPreferences) {
         mTaskPreferences = taskPreferences;
         // If there is a settings change, then trigger the onNetworkChange event just as in super()
-        mTaskPreferences.registerForSettingsChange(mNetworkChangeReceiver);
+        mTaskPreferences.registerForSettingsChange(new OnSettingsChangedListener() {
+            @Override
+            public void onSettingChanged() {
+                if (mListener == null) {
+                    TaskLogger.getLogger().w("Null listener in network util extended");
+                    return;
+                }
+                mListener.onConditionsChange(isConnected());
+            }
+        });
     }
 
     @Override

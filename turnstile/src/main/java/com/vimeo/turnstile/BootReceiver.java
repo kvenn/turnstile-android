@@ -29,7 +29,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.RequiresPermission;
 
-import com.vimeo.turnstile.database.TaskDatabase;
 import com.vimeo.turnstile.preferences.BootPreferences;
 
 /**
@@ -46,21 +45,21 @@ public final class BootReceiver extends BroadcastReceiver {
     @RequiresPermission(Manifest.permission.RECEIVE_BOOT_COMPLETED)
     public void onReceive(final Context context, Intent intent) {
         if (intent != null && Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            TaskLogger.d("BootReceiver onReceive for TaskManager");
+            TaskLogger.getLogger().d("BootReceiver onReceive for TaskManager");
             // Reading SharedPreferences can take a little time initially since it requires reading from disk.
             // Since we don't want to slow down the user's device, we'll go onto a worker thread since there is
             // no benefit of this being synchronous. 3/2/16 [KV]
-            TaskDatabase.execute(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     for (Class serviceClass : BootPreferences.getServiceClasses(context)) {
-                        TaskLogger.d("Starting service: " + serviceClass.getSimpleName());
+                        TaskLogger.getLogger().d("Starting service: " + serviceClass.getSimpleName());
                         Intent startServiceIntent = new Intent(context, serviceClass);
                         // The service will be started on the main thread 3/2/16 [KV]
                         context.startService(startServiceIntent);
                     }
                 }
-            });
+            }).start();
         }
     }
 }
