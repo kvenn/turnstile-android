@@ -172,6 +172,7 @@ Now that everything has been set up, you want to add a task and listen to its li
 
 ```java
 SimpleTaskManager taskManager = SimpleTaskManager.getInstance();
+// Add a listener to receive notification of task related events
 taskManager.registerTaskEventListener(new TaskEventListener<SimpleTask>() {
     @Override
     public void onStarted(@NonNull SimpleTask task) {
@@ -196,6 +197,29 @@ taskManager.registerTaskEventListener(new TaskEventListener<SimpleTask>() {
     @Override
     public void onAdded(@NonNull SimpleTask task) {
         // a task has been added
+    }
+});
+
+// Add a listener to receive notification of manager specific events
+taskManager.registerManagerEventListener(new ManagerEventListener() {
+    @Override
+    public void onAllTasksPaused() {
+        // all tasks have been paused
+    }
+
+    @Override
+    public void onAllTasksResumed() {
+        // all tasks have been resumed
+    }
+
+    @Override
+    public void onConditionsLost() {
+        // the conditions have changed and been lost (e.g. network connectivity lost)
+    }
+
+    @Override
+    public void onConditionsReturned() {
+        // the conditions have changed and are favorable (e.g. network connectivity regained)
     }
 });
 
