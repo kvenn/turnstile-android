@@ -2,9 +2,9 @@ package com.vimeo.sample.tasks;
 
 import com.vimeo.sample.R;
 import com.vimeo.turnstile.BaseTaskManager;
-import com.vimeo.turnstile.BaseTaskService;
+import com.vimeo.turnstile.NotificationTaskService;
 
-public class SimpleTaskService extends BaseTaskService<SimpleTask> {
+public class SimpleTaskService extends NotificationTaskService<SimpleTask> {
 
     @Override
     protected void handleAdditionalEvents(String event) {

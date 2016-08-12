@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">task-queue</string>
-
+    <string name="notification_started">Started</string>
+    <string name="notification_resumed">Resumed</string>
+    <string name="notification_paused">Paused</string>
+    <string name="notification_view">Tap to view in app</string>
+    <string name="notification_progress">%1$d of %2$d</string>
 </resources>
