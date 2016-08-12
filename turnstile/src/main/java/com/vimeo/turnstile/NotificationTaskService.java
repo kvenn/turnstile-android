@@ -220,14 +220,6 @@ public abstract class NotificationTaskService<T extends BaseTask> extends BaseTa
     // Notifications
     // -----------------------------------------------------------------------------------------------------
     // <editor-fold desc="Notifications">
-    // TODO: Notifications have no designs or copy - they were like this before but it's ticketed to fix them 3/2/16 [KV]
-    // Once we have designs and copy, we can pull these into a reasonable place (like strings). But we need to know
-    // what will be in common or different before doing so.
-    private static final String STARTED_STRING = "Started";
-    private static final String RESUMED_STRING = "Resumed";
-    private static final String PAUSED_STRING = "Paused";
-    private static final String OF_STRING = " of ";
-    private static final String TAP_TO_VIEW = "Tap to view in app";
 
     private void showNotification() {
         // This is when the user will know their upload should be running
@@ -240,7 +232,7 @@ public abstract class NotificationTaskService<T extends BaseTask> extends BaseTa
      */
     protected void setupNotification() {
         mProgressNotificationBuilder = new Notification.Builder(this).setSmallIcon(getProgressIconDrawable())
-                .setTicker(STARTED_STRING)
+                .setTicker(getString(R.string.notification_started))
                 .setProgress(100, 0, true)
                 // Example: "Uploading video"
                 .setContentTitle(getProgressNotificationString())
@@ -250,7 +242,7 @@ public abstract class NotificationTaskService<T extends BaseTask> extends BaseTa
     }
 
     private void showStartedTicker() {
-        mProgressNotificationBuilder.setTicker(STARTED_STRING)
+        mProgressNotificationBuilder.setTicker(getString(R.string.notification_started))
                 .setContentTitle(getProgressNotificationString())
                 .setContentText(getProgressContentText());
         notifyIfShowing();
@@ -271,14 +263,14 @@ public abstract class NotificationTaskService<T extends BaseTask> extends BaseTa
     }
 
     private void returnToProgressState() {
-        mProgressNotificationBuilder.setTicker(RESUMED_STRING)
+        mProgressNotificationBuilder.setTicker(getString(R.string.notification_resumed))
                 .setContentTitle(getProgressNotificationString())
                 .setContentText(getProgressContentText());
         notifyIfShowing();
     }
 
     private void setNotificationLostNetwork() {
-        mProgressNotificationBuilder.setTicker(PAUSED_STRING)
+        mProgressNotificationBuilder.setTicker(getString(R.string.notification_paused))
                 .setContentText(mNetworkNotificationMessageString);
         notifyIfShowing();
     }
@@ -291,7 +283,7 @@ public abstract class NotificationTaskService<T extends BaseTask> extends BaseTa
                 // Example: "Upload finished"
                 .setTicker(mFinishedNotificationTitleString)
                 .setContentTitle(mFinishedNotificationTitleString)
-                .setContentText(TAP_TO_VIEW)
+                .setContentText(getString(R.string.notification_view))
                 .setSmallIcon(getFinishedIconDrawable())
                 .setAutoCancel(true);
         setIntent(builder);
@@ -317,7 +309,7 @@ public abstract class NotificationTaskService<T extends BaseTask> extends BaseTa
     }
 
     private String getProgressContentText() {
-        return mFinishedCount + OF_STRING + mTotalTaskCount;
+        return getString(R.string.notification_progress, mFinishedCount, mTotalTaskCount);
     }
 
     private void notifyIfShowing() {

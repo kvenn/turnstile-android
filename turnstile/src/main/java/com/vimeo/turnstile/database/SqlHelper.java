@@ -235,6 +235,7 @@ class SqlHelper {
     }
 
     public SQLiteStatement getDeleteStatement(String id) {
+        id = DatabaseUtils.sqlEscapeString(id);
         return db.compileStatement("DELETE FROM " + tableName + " WHERE " + primaryKeyColumnName + "=" + id);
     }
 

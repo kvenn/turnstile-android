@@ -297,7 +297,6 @@ class TaskDatabase<T extends BaseTask> {
     }
 
     private void delete(String id) {
-        id = DatabaseUtils.sqlEscapeString(id);
         SQLiteStatement stmt = mSqlHelper.getDeleteStatement(id);
         stmt.execute();
         // TODO: Do some logging or send it back! 2/10/16 [KV]
