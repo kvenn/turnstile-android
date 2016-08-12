@@ -43,7 +43,6 @@ class SqlHelper {
 
     private SQLiteStatement insertStatement;
     private SQLiteStatement insertOrReplaceStatement;
-    private SQLiteStatement deleteStatement;
     private SQLiteStatement countStatement;
 
     private final SQLiteDatabase db;
@@ -235,12 +234,8 @@ class SqlHelper {
         return insertOrReplaceStatement;
     }
 
-    public SQLiteStatement getDeleteStatement() {
-        if (deleteStatement == null) {
-            deleteStatement = db.compileStatement(
-                    "DELETE FROM " + tableName + " WHERE " + primaryKeyColumnName + " = ?");
-        }
-        return deleteStatement;
+    public SQLiteStatement getDeleteStatement(String id) {
+        return db.compileStatement("DELETE FROM " + tableName + " WHERE " + primaryKeyColumnName + "=" + id);
     }
 
     public String createSelect(@Nullable String where, @Nullable Integer limit, @Nullable Order... orders) {

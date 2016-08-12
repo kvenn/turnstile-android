@@ -453,7 +453,8 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      *
      * @param task     the task to add to the manager
      * @param callback the callback to receive notification
-     *                 of success and error.
+     *                 of success and error when inserting the
+     *                 task into the {@link TaskCache}.
      */
     public void addTask(@NonNull T task, @Nullable TaskCallback callback) {
         if (!mTaskCache.containsTask(task.getId())) {
