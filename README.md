@@ -57,7 +57,7 @@ If you don't think you'll benefit from the customizability of this library, ther
     - Pros: Good for long running network requests.
     - Cons: It's difficult to extend or customize. It also has a limited feature set.
 
-** This seems redundant to me, or unnecessary. We do/can state the use cases for Vimeo in the "Background" section. Beyond that, users can brainstorm applications themselves?**
+**This seems redundant to me, or unnecessary. We do/can state the use cases for Vimeo in the "Background" section. Beyond that, users can brainstorm applications themselves?**
 
 ## Use Cases
 * Upload/download
