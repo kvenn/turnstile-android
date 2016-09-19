@@ -3,19 +3,12 @@ Turnstile is an abstract task queue that supports long running, parallel task ex
 
 ## Contents
 * [Features](#features)
-* 
-**Consider deleting the "why" and "what else" sections. It's sufficient to just describe it's features/benefits imo. Readers can diff the feature set against that of other libraries. The "what else" section will become out of date.**
-
-* [Why Write Another Task Queue?](#why-write-another-task-queue)
-    - [What Else Is Out There?](#what-else-is-out-there)
 * [Use Cases](#use-cases)
 * [Getting Started](#getting-started)
     - [Gradle](#gradle)
     - [Submodule](#submodule)
-
-**Why slash API? Can we remove the slash, it's unclear what it means. Reading through the section itself it feels like it's doing too much. Can it be broken apart into smaller chunks?**
-
-* [Example/API](#example)  
+* [How Does It Work?](#how-does-it-work)
+* [How to Use Turnstile](#how-to-use-turnstile)  
 * [Contact Us](#contact-us)
     - [Found an Issue?](#found-an-issue)
     - [Want to Contribute?](#want-to-contribute)
@@ -23,9 +16,6 @@ Turnstile is an abstract task queue that supports long running, parallel task ex
 * [License](#license)
 
 ## Features
-
-**Consider changing this form a bullet list to complete sentences broken into a few short paragraphs.**
-
 * Long running background task execution through a [Service](https://developer.android.com/reference/android/app/Service.html)
     - Automatically resume tasks after your app is killed or the device is restarted
     - Highly customizable notification (optional)
@@ -36,28 +26,6 @@ Turnstile is an abstract task queue that supports long running, parallel task ex
 * Specify conditions necessary to run your task
     - Ex. Automatically pause when network is lost and resume when network has returned
 * Customizable
-
-**If this section remains, consider just calling it something like "Background" and moving it to the top just below the TOC.**
-
-## Why Write Another Task Queue?
-Although there are many phenomenal task queue libraries that exist for Android, we created this one to accommodate a broader set of requirements. While implementing upload and download for Vimeo, we found we needed more control over the state of our tasks which other libraries couldn't accommodate. For upload, we didn't want to persist the tasks to disk until the user hit a button, but we still wanted it to execute. For download, we wanted a customizable app drawer notification and the ability to store more objects with our task (like our concrete Video object). And for both queues, we wanted to support complex retry logic that allowed us to pick up where we left off so that if our upload or download was interrupted at 80%, it would be able to continue from that point without needing to start over.
-
-There are many common [features](#features) that every task queue will have, but you may still want the flexibilty to determine how, why, and when your tasks are run. This library provides that flexibility while removing a majority of the boilerplate. It's easy to use for a simple case and extensible for a more custom [use case](#use-cases).
-
-### What Else Is Out There?
-If you don't think you'll benefit from the customizability of this library, there are other options that each provide different advantages (this list is not exhaustive).
-
-* android-priority-jobqueue
-    - Pros: Most of the [features above](#features). Additionally has prioritization of jobs, job delay, load balancing, and grouping
-    - Cons: Doesn't run in a Service (dies with your application). It's difficult to extend or customize.
-* tape
-    - Pros: Most of the [features above](#features). Very easy to implement for simple tasks.
-    - Cons: No progress broadcasting or awareness of network. It's difficult to extend or customize.
-* robospice
-    - Pros: Good for long running network requests.
-    - Cons: It's difficult to extend or customize. It also has a limited feature set.
-
-**This seems redundant to me, or unnecessary. We do/can state the use cases for Vimeo in the "Background" section. Beyond that, users can brainstorm applications themselves?**
 
 ## Use Cases
 * Upload/download
@@ -86,15 +54,12 @@ Then in your `build.gradle` use:
 compile project(':turnstile-android:turnstile')
 ```
 
-## Example
-
-#### API
-
+## How Does It Work?
 All examples below are in reference to the code found in the [sample app](sample/src/main/java/com/vimeo/sample). It is encouraged that you copy the java classes from the sample folder into your app to help get started. Refer to the [initialization section](#initialization) to continue getting set up. API explanation will reference the sample app, please see that code to understand it fully.
 
 The API consists of 3 main classes that you will need to extend, `BaseTaskManager`, `BaseTaskService`, and `BaseTask`; and two optional classes you can supply for more functionality, `TaskLogger` and `Conditions`.
 
-- `BaseTaskManager`: This is the class responsible for running the tasks and tying everything together. You must extend this in order to provide any additional task handling logic and convenience APIs. Your task manager must be a singleton, since a reference is required by your `BaseTaskService` class. See below for more information on initialization.
+- `BaseTaskManager`: This is the class responsible for running the tasks and tying everything together. You must extend this class in order to make it a singleton, since a reference is required by your `BaseTaskService` class. You can addtionally add task handling logic and convenience APIs to this subclass since it has access to when each task is executed. See below for more information on [initialization](#initialization).
  
 - `BaseTask`: The task that you wish to run. All your work will be done in the `execute()` method on a background thread. You should call task lifecycle events where appropriate, such as `onTaskProgress(int progress)`, `onTaskFailure(TaskError error)`, and `onTaskCompleted`.
 
@@ -105,6 +70,8 @@ The API consists of 3 main classes that you will need to extend, `BaseTaskManage
 - `Conditions`: This is an interface used by the library to determine whether or not the device conditions are suitable to run the tasks, e.g. network availability. You can use one of the default ones supplied, such as `NetworkConditionsBasic`, which checks for network connectivity, or `NetworkConditionsExtended`, which checks for wifi connectivity. You can also extend `NetworkConditions` to create your own network based conditions, or go completely custom by implementing your own `Conditions`, e.g. you don't want to run tasks if the battery is too low.
 
 The `BaseTaskManager` controls the execution of the `BaseTask`s as specified by the `Conditions`. A singleton reference to the `BaseTaskManager` is held by the `BaseTaskService` to ensure that it isn't garbage collected so it can be as resilient as possible.
+
+## How To Use Turnstile
 
 #### Initialization
 
