@@ -1,5 +1,5 @@
 # turnstile
-Turnstile is an abstract task queue that supports long running, parallel task execution. Turnstile let's you define your own stateful tasks and manage their transition from state to state.
+Turnstile is an abstract task queue that supports long running, parallel task execution. Turnstile lets you define your own stateful tasks and manage their transition from state to state.
 
 ## Contents
 * [Features](#features)
