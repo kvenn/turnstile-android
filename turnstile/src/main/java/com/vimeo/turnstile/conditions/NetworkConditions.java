@@ -64,6 +64,7 @@ public abstract class NetworkConditions implements Conditions {
         };
 
         // Set the receiver to listen for network connectivity change
+        // TODO: Causes a memory leak, this object is never unregistered and GC'd 10/7/16 [AR]
         context.getApplicationContext()
                 .registerReceiver(mNetworkChangeReceiver,
                                   new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));

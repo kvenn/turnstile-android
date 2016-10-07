@@ -56,6 +56,7 @@ public final class NetworkConditionsExtended extends NetworkConditions {
     public void setTaskPreferences(TaskPreferences taskPreferences) {
         mTaskPreferences = taskPreferences;
         // If there is a settings change, then trigger the onNetworkChange event just as in super()
+        // TODO: this could cause this object to be leaked since we never unregister 10/7/16 [AR]
         mTaskPreferences.registerForSettingsChange(new OnSettingsChangedListener() {
             @Override
             public void onSettingChanged() {

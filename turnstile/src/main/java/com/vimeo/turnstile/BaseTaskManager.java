@@ -81,7 +81,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         @NonNull
         final Context mBuilderContext;
         @NonNull
-        Conditions mBuilderConditions;
+        final Conditions mBuilderConditions;
         @Nullable
         Intent mBuilderNotificationIntent;
 
@@ -94,10 +94,11 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
             mBuilderStartOnDeviceBoot = false;
         }
 
-        @NonNull
-        public Builder withConditions(@NonNull Conditions conditions) {
+        public Builder(@NonNull Context context, @NonNull Conditions conditions) {
+            mBuilderContext = context;
+            // Set the default to be the extended network util
             mBuilderConditions = conditions;
-            return this;
+            mBuilderStartOnDeviceBoot = false;
         }
 
         @NonNull
