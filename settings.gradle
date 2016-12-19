@@ -1,1 +1,1 @@
-include ':turnstile', ':sample'
+include ':turnstile', ':sample', ':download-sample'
