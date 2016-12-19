@@ -7,7 +7,7 @@ import com.vimeo.sample.tasks.SimpleConditions;
 import com.vimeo.sample.tasks.SimpleLogger;
 import com.vimeo.sample.tasks.SimpleTaskManager;
 import com.vimeo.turnstile.BaseTaskManager;
-import com.vimeo.turnstile.TaskLogger;
+import com.vimeo.turnstile.utils.TaskLogger;
 
 public class App extends Application {
 
