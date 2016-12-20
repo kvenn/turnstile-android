@@ -1,4 +1,4 @@
-package com.vimeo.download_sample.tasks;
+package com.vimeo.download_sample.downloadqueue;
 
 import android.util.Log;
 

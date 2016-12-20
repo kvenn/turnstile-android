@@ -3,10 +3,10 @@ package com.vimeo.download_sample;
 import android.app.Application;
 import android.content.Intent;
 
-import com.vimeo.download_sample.tasks.SimpleConditions;
-import com.vimeo.download_sample.tasks.SimpleLogger;
-import com.vimeo.download_sample.tasks.SimpleTaskManager;
+import com.vimeo.download_sample.downloadqueue.DownloadManager;
+import com.vimeo.download_sample.downloadqueue.SimpleLogger;
 import com.vimeo.turnstile.BaseTaskManager;
+import com.vimeo.turnstile.conditions.NetworkConditionsExtended;
 import com.vimeo.turnstile.utils.TaskLogger;
 
 public class App extends Application {
@@ -19,7 +19,7 @@ public class App extends Application {
 
         // Inject the components we want into the TaskManager
         BaseTaskManager.Builder taskTaskManagerBuilder = new BaseTaskManager.Builder(this);
-        taskTaskManagerBuilder.withConditions(new SimpleConditions());
+        taskTaskManagerBuilder.withConditions(new NetworkConditionsExtended(this));
         taskTaskManagerBuilder.withStartOnDeviceBoot(false);
 
         // We could also use the built in NetworkConditionsBasic class
@@ -36,6 +36,6 @@ public class App extends Application {
 
         taskTaskManagerBuilder.withNotificationIntent(intent);
 
-        SimpleTaskManager.initialize(taskTaskManagerBuilder);
+        DownloadManager.initialize(taskTaskManagerBuilder);
     }
 }
