@@ -3,6 +3,7 @@ package com.vimeo.download_sample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,6 +16,8 @@ import com.bumptech.glide.Glide;
 import com.vimeo.download_sample.downloadqueue.DownloadManager;
 import com.vimeo.download_sample.downloadqueue.DownloadTask;
 import com.vimeo.download_sample.downloadqueue.exception.DownloadException;
+import com.vimeo.download_sample.downloadqueue.exception.NullRemoteFileUrlException;
+import com.vimeo.download_sample.downloadqueue.exception.OutOfSpaceException;
 import com.vimeo.turnstile.BaseTaskManager.TaskEventListener;
 import com.vimeo.turnstile.TaskError;
 import com.vimeo.turnstile.database.TaskCallback;
@@ -27,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView mResultText;
     private ScrollView mScrollView;
     private ImageView mImageView;
+
+    private static final String[] sUrls = {
+            "http://www.catgifpage.com/gifs/310.gif", "http://www.catgifpage.com/gifs/318.gif",
+            "http://www.cutecatgifs.com/wp-content/uploads/2015/07/Cat-slots.gif",
+            "http://viralgifs.com/wp-content/uploads/2014/03/cat_leg_crawl.gif"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(@NonNull DownloadTask task) {
-                File file = task.getLocalFile();
-                if (file != null) {
-                    Glide.with(getApplicationContext()).load(file.getAbsolutePath()).into(mImageView);
-                }
+                showImageFromTask(task);
                 addTextLog(getString(R.string.result_text, task.getId()));
             }
 
@@ -81,26 +87,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_new_task).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                String remoteFileUri = "http://www.catgifpage.com/gifs/318.gif";
-                if (DownloadManager.getInstance().getTask(remoteFileUri) != null) {
-                    try {
-                        DownloadManager.getInstance().redownloadFile(remoteFileUri);
-                    } catch (DownloadException e) {
-                        e.printStackTrace();
-                    }
-                }
-                final DownloadTask task = new DownloadTask(remoteFileUri);
-                mTaskManager.addTask(task, new TaskCallback() {
-                    @Override
-                    public void onSuccess() {
-                        addTextLog(getString(R.string.added_text, task.getId()));
-                    }
+                addRandomCatGifToDownloadQueue();
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        addTextLog(getString(R.string.failure_text, task.getId()));
-                    }
-                });
             }
         });
 
@@ -113,6 +101,55 @@ public class MainActivity extends AppCompatActivity {
                 cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
             }
         });
+    }
+
+    private void addRandomCatGifToDownloadQueue() {
+        String remoteFileUri = sUrls[(int) (Math.random() * (sUrls.length))];
+        DownloadTask existingTask = DownloadManager.getInstance().getTask(remoteFileUri);
+        if (existingTask != null) {
+            if (existingTask.isComplete()) {
+                addTextLog("The task you're trying to add is already done!");
+                showImageFromTask(existingTask);
+                return;
+            }
+            // Only re-add it if it's not already complete
+            // re-download will cancel/delete the current task and start over
+            try {
+                DownloadManager.getInstance().redownloadFile(remoteFileUri);
+            } catch (NullRemoteFileUrlException e) {
+                addTextLog("Failure: Null remote file url");
+            } catch (OutOfSpaceException e) {
+                addTextLog("Failure: Out of space");
+            } catch (DownloadException e) {
+                addTextLog("Failure: Couldn't add download to queue");
+            }
+        }
+        final DownloadTask task = new DownloadTask(remoteFileUri);
+        mTaskManager.addTask(task, new TaskCallback() {
+            @Override
+            public void onSuccess() {
+                addTextLog(getString(R.string.added_text, task.getId()));
+            }
+
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                addTextLog(getString(R.string.failure_text, task.getId()));
+            }
+        });
+    }
+
+    private void showImageFromTask(@Nullable DownloadTask task) {
+        if (task == null) {
+            addTextLog("Null task passed to `showImageFromTask()`");
+            return;
+        }
+        File file = task.getLocalFile();
+        if (file != null) {
+            Glide.with(getApplicationContext())
+                    .load(file.getAbsolutePath())
+                    .placeholder(android.R.drawable.stat_sys_download)
+                    .into(mImageView);
+        }
     }
 
     private void addTextLog(String text) {
