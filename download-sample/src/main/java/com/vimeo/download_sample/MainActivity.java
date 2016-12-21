@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public boolean onException(Exception e, File model, Target<GlideDrawable> target,
                                                    boolean isFirstResource) {
-                            mProgressBar.setVisibility(View.GONE);
+                            mProgressBar.setVisibility(View.INVISIBLE);
                             return false;
                         }
 
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                         public boolean onResourceReady(GlideDrawable resource, File model,
                                                        Target<GlideDrawable> target,
                                                        boolean isFromMemoryCache, boolean isFirstResource) {
-                            mProgressBar.setVisibility(View.GONE);
+                            mProgressBar.setVisibility(View.INVISIBLE);
                             return false;
                         }
                     })

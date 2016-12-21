@@ -15,7 +15,7 @@
         android:id="@+id/progress_bar"
         android:layout_width="match_parent"
         android:layout_height="25dp"
-        android:visibility="gone"/>
+        android:visibility="invisible"/>
 
     <ImageView
         android:id="@+id/image_view"
