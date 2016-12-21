@@ -27,13 +27,4 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
 
     compile project(':turnstile')
-
-//    compile 'com.facebook.fresco:fresco:1.0.0'
-//    // For animated GIF support
-//    compile 'com.facebook.fresco:animated-gif:1.0.0'
-//    // For WebP support, including animated WebP
-//    compile 'com.facebook.fresco:animated-webp:1.0.0'
-//    compile 'com.facebook.fresco:webpsupport:1.0.0'
-//    // For WebP support, without animations
-//    compile 'com.facebook.fresco:webpsupport:1.0.0'
 }

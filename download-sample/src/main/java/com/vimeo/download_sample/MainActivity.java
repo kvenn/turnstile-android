@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Fresco.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
         if (getIntent() != null && App.NOTIFICATION_INTENT_KEY.equals(getIntent().getAction())) {
@@ -177,18 +176,11 @@ public class MainActivity extends AppCompatActivity {
                         public boolean onResourceReady(GlideDrawable resource, File model,
                                                        Target<GlideDrawable> target,
                                                        boolean isFromMemoryCache, boolean isFirstResource) {
-
                             mProgressBar.setVisibility(View.GONE);
                             return false;
                         }
                     })
                     .into(mImageView);
-
-//            DraweeController controller = Fresco.newDraweeControllerBuilder()
-//                    .setUri(Uri.fromFile(file))
-//                    .setAutoPlayAnimations(true)
-//                    .build();
-//            mImageView.setController(controller);
         }
     }
 
