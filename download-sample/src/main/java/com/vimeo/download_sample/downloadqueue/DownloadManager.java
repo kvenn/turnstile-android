@@ -107,8 +107,6 @@ public final class DownloadManager extends BaseTaskManager<DownloadTask> {
         if (remoteFileUrl == null || TextUtils.isEmpty(remoteFileUrl)) {
             throw new NullRemoteFileUrlException("Provided remoteFileUrl is null or is empty");
         }
-
-
 //        if (getAvailableSpaceInStorageDirectory() < videoFile.getSize()) {
 //            // As of right now, it's possible for the best storage directory to change from this call to the
 //            // actual directory selection in the task. This will be handled by an out of space which would

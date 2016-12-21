@@ -277,7 +277,7 @@ public class DownloadTask extends BaseTask {
             // Write the remaining bytes from the source to the sink
             localFileSink.writeAll(remoteFileSource);
             localFileSink.flush();
-            onTaskCompleted(); // TODO: check if bytes read == file size or w/e [KV] 3/7/16
+            onTaskCompleted(); // TODO: confirm bytes read == file size  [KV] 3/7/16
         } catch (InterruptedIOException ioex) {
             TaskLogger.getLogger().d("Interrupt");
             // This was most likely because of network or specifically issued interrupt 3/7/16 [KV]
