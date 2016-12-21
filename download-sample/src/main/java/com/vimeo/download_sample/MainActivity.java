@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.vimeo.download_sample.downloadqueue.DownloadManager;
 import com.vimeo.download_sample.downloadqueue.DownloadTask;
 import com.vimeo.download_sample.downloadqueue.exception.DownloadException;
@@ -46,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fresco.initialize(getApplicationContext());
+//        Fresco.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
         if (getIntent() != null && App.NOTIFICATION_INTENT_KEY.equals(getIntent().getAction())) {
@@ -125,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         DownloadTask existingTask = DownloadManager.getInstance().getTask(remoteFileUri);
         if (existingTask != null) {
             if (existingTask.isComplete()) {
-                addTextLog("The task you're trying to add is already done!");
+                addTextLog("The task you're trying to add is already done! " + existingTask.getId());
                 showImageFromTask(existingTask);
                 return;
             }
