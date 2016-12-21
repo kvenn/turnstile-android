@@ -42,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
             "http://viralgifs.com/wp-content/uploads/2014/03/cat_leg_crawl.gif"
     };
 
+    // 72MB GIF
+    private static final String LARGE_GIF_REMOTE_URL = "http://i.imgur.com/10EEeYU.gif";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_new_large_task).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                // 50mb gif (71mb)
-                addRemoteFileUrlToDownloadQueue("http://i.imgur.com/10EEeYU.gif");
+                // 72MB GIF
+                addRemoteFileUrlToDownloadQueue(LARGE_GIF_REMOTE_URL);
             }
         });
 
