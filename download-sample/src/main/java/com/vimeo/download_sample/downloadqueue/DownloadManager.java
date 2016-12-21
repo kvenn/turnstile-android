@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -238,6 +239,7 @@ public final class DownloadManager extends BaseTaskManager<DownloadTask> {
     // <editor-fold desc="Download Location">
 
     /** Useful for checking if there is available space in the storage directory up front */
+    @RequiresPermission("android.permission.WRITE_EXTERNAL_STORAGE")
     public static long getAvailableSpaceInStorageDirectory() {
         // TODO: This doesn't account for actively downloading videos - implement when we implement resumability (officially..) [KV] 3/17/16
         // http://developer.android.com/guide/topics/data/data-storage.html
@@ -245,6 +247,7 @@ public final class DownloadManager extends BaseTaskManager<DownloadTask> {
     }
 
     /** Returns the storage location for downloads. Manager must be initialized before use */
+    @RequiresPermission("android.permission.WRITE_EXTERNAL_STORAGE")
     @Nullable
     public static File getStorageDirectoryWithMostSpace() {
         return getStorageDirectoryWithMostSpace(getInstance().mContext);
@@ -254,6 +257,7 @@ public final class DownloadManager extends BaseTaskManager<DownloadTask> {
      * Returns the storage location for downloads.
      * This could rely on a preference and change where users want their downloads to go
      */
+    @RequiresPermission("android.permission.WRITE_EXTERNAL_STORAGE")
     @Nullable
     public static File getStorageDirectoryWithMostSpace(Context context) {
         File[] externalFilesDirs = ContextCompat.getExternalFilesDirs(context, null);
