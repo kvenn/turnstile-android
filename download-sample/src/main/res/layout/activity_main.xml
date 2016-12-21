@@ -11,10 +11,24 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.vimeo.download_sample.MainActivity">
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:visibility="gone"/>
+
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"/>
+
+    <Button
+        android:id="@+id/button_new_large_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/new_large_task"/>
 
     <Button
         android:id="@+id/button_new_task"

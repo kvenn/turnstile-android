@@ -8,11 +8,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.vimeo.download_sample.downloadqueue.DownloadManager;
 import com.vimeo.download_sample.downloadqueue.DownloadTask;
 import com.vimeo.download_sample.downloadqueue.exception.DownloadException;
@@ -30,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mResultText;
     private ScrollView mScrollView;
     private ImageView mImageView;
+    private ProgressBar mProgressBar;
 
     private static final String[] sUrls = {
             "http://www.catgifpage.com/gifs/310.gif", "http://www.catgifpage.com/gifs/318.gif",
@@ -40,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fresco.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
         if (getIntent() != null && App.NOTIFICATION_INTENT_KEY.equals(getIntent().getAction())) {
@@ -49,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         mScrollView = (ScrollView) findViewById(R.id.scroll_view);
         mResultText = (TextView) findViewById(R.id.text_view_task_result);
         mImageView = (ImageView) findViewById(R.id.image_view);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         final TextView cacheView = (TextView) findViewById(R.id.text_view_cache);
 
@@ -77,27 +85,31 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAdded(@NonNull DownloadTask task) {
-                //noinspection ConstantConditions
                 cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
             }
         });
 
         cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
 
+        findViewById(R.id.button_new_large_task).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 50mb gif (71mb)
+                addRemoteFileUrlToDownloadQueue("http://i.imgur.com/10EEeYU.gif");
+            }
+        });
+
         findViewById(R.id.button_new_task).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 addRandomCatGifToDownloadQueue();
-
             }
         });
 
-        //noinspection ConstantConditions
         findViewById(R.id.button_clear_tasks).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 mTaskManager.cancelAll();
-                //noinspection ConstantConditions
                 cacheView.setText(getString(R.string.tasks_in_cache, mTaskManager.getTasks().size()));
             }
         });
@@ -105,6 +117,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void addRandomCatGifToDownloadQueue() {
         String remoteFileUri = sUrls[(int) (Math.random() * (sUrls.length))];
+        addRemoteFileUrlToDownloadQueue(remoteFileUri);
+    }
+
+    private void addRemoteFileUrlToDownloadQueue(String remoteFileUri) {
+
         DownloadTask existingTask = DownloadManager.getInstance().getTask(remoteFileUri);
         if (existingTask != null) {
             if (existingTask.isComplete()) {
@@ -145,10 +162,34 @@ public class MainActivity extends AppCompatActivity {
         }
         File file = task.getLocalFile();
         if (file != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
             Glide.with(getApplicationContext())
-                    .load(file.getAbsolutePath())
-                    .placeholder(android.R.drawable.stat_sys_download)
+                    .load(file)
+                    .listener(new RequestListener<File, GlideDrawable>() {
+
+                        @Override
+                        public boolean onException(Exception e, File model, Target<GlideDrawable> target,
+                                                   boolean isFirstResource) {
+                            mProgressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, File model,
+                                                       Target<GlideDrawable> target,
+                                                       boolean isFromMemoryCache, boolean isFirstResource) {
+
+                            mProgressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
                     .into(mImageView);
+
+//            DraweeController controller = Fresco.newDraweeControllerBuilder()
+//                    .setUri(Uri.fromFile(file))
+//                    .setAutoPlayAnimations(true)
+//                    .build();
+//            mImageView.setController(controller);
         }
     }
 
