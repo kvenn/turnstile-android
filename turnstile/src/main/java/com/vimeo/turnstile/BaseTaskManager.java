@@ -88,26 +88,25 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         @NonNull
         final Context mBuilderContext;
         @NonNull
-        Conditions mBuilderConditions;
+        Conditions mBuilderConditions = new Conditions() {
+            @Override
+            public boolean areConditionsMet() {
+                return true;
+            }
+
+            @Override
+            public void setListener(@Nullable Listener listener) {
+
+            }
+        };
         @Nullable
         Intent mBuilderNotificationIntent;
 
         boolean mBuilderStartOnDeviceBoot;
+        int mMaxActiveTasks = 3;
 
         public Builder(@NonNull Context context) {
             mBuilderContext = context;
-            // Set the default to be a no-op condition
-            mBuilderConditions = new Conditions() {
-                @Override
-                public boolean areConditionsMet() {
-                    return true;
-                }
-
-                @Override
-                public void setListener(@Nullable Listener listener) {
-
-                }
-            };
             mBuilderStartOnDeviceBoot = false;
         }
 
@@ -139,6 +138,18 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         @NonNull
         public Builder withStartOnDeviceBoot(boolean startOnDeviceBoot) {
             mBuilderStartOnDeviceBoot = startOnDeviceBoot;
+            return this;
+        }
+
+        /**
+         * The number of tasks that can run concurrently.
+         *
+         * @param maxActiveTasks
+         * @return
+         */
+        @NonNull
+        public Builder withMaxActiveTasks(int maxActiveTasks) {
+            mMaxActiveTasks = maxActiveTasks;
             return this;
         }
     }
@@ -177,7 +188,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     private static final String LOG_TAG = "BaseTaskManager";
     // Consider upping the maximum or dynamically calculating it based on relevant factors
     // (network speed, size of tasks in pool, etc).
-    private static final int MAX_ACTIVE_TASKS = 3;
+    private static final int MAX_ACTIVE_TASKS = 1;
 
     // ---- Executor Service ----
     private final ExecutorService mCachedExecutorService;
