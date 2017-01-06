@@ -19,8 +19,11 @@ public class App extends Application {
 
         // Inject the components we want into the TaskManager
         BaseTaskManager.Builder taskTaskManagerBuilder = new BaseTaskManager.Builder(this);
-        taskTaskManagerBuilder.withConditions(new SimpleConditions());
-        taskTaskManagerBuilder.withStartOnDeviceBoot(false);
+        taskTaskManagerBuilder.withConditions(new SimpleConditions())
+                .withStartOnDeviceBoot(false);
+
+        // If we'd like the tasks to run in series, we can set that on the builder
+        // taskTaskManagerBuilder.withSeriesExecution();
 
         // We could also use the built in NetworkConditionsBasic class
         // taskTaskManagerBuilder.withConditions(new NetworkConditionsBasic(this));

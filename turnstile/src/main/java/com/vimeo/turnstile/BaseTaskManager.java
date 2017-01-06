@@ -85,29 +85,34 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      */
     public static final class Builder {
 
+        private static final int DEFAULT_MAX_ACTIVE_TASKS = 3;
+
         @NonNull
         final Context mBuilderContext;
         @NonNull
-        Conditions mBuilderConditions = new Conditions() {
-            @Override
-            public boolean areConditionsMet() {
-                return true;
-            }
-
-            @Override
-            public void setListener(@Nullable Listener listener) {
-
-            }
-        };
+        Conditions mBuilderConditions;
         @Nullable
         Intent mBuilderNotificationIntent;
 
         boolean mBuilderStartOnDeviceBoot;
-        int mMaxActiveTasks = 3;
+        int mMaxActiveTasks;
 
         public Builder(@NonNull Context context) {
             mBuilderContext = context;
+            // Set defaults
             mBuilderStartOnDeviceBoot = false;
+            mMaxActiveTasks = DEFAULT_MAX_ACTIVE_TASKS;
+            mBuilderConditions = new Conditions() {
+                @Override
+                public boolean areConditionsMet() {
+                    return true;
+                }
+
+                @Override
+                public void setListener(@Nullable Listener listener) {
+
+                }
+            };
         }
 
         /**
@@ -142,14 +147,23 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         }
 
         /**
-         * The number of tasks that can run concurrently.
-         *
-         * @param maxActiveTasks
-         * @return
+         * Set the number of tasks that can run concurrently. The default
+         * is {@link #DEFAULT_MAX_ACTIVE_TASKS}.
+         * <p>
+         * To have the tasks run in series, call {@link #withSeriesExecution()}.
          */
         @NonNull
         public Builder withMaxActiveTasks(int maxActiveTasks) {
             mMaxActiveTasks = maxActiveTasks;
+            return this;
+        }
+
+        /**
+         * Set the {@link #mMaxActiveTasks} to 1. This will cause the tasks to
+         * run in series in the order they're added.
+         */
+        public Builder withSeriesExecution() {
+            mMaxActiveTasks = 1;
             return this;
         }
     }
@@ -186,9 +200,6 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     // <editor-fold desc="Fields">
 
     private static final String LOG_TAG = "BaseTaskManager";
-    // Consider upping the maximum or dynamically calculating it based on relevant factors
-    // (network speed, size of tasks in pool, etc).
-    private static final int MAX_ACTIVE_TASKS = 1;
 
     // ---- Executor Service ----
     private final ExecutorService mCachedExecutorService;
@@ -196,6 +207,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
     private final static ConcurrentHashMap<String, Future> sTaskPool = new ConcurrentHashMap<>();
 
     private final boolean mStartOnDeviceBoot;
+    private final int mMaxActiveTasks;
 
     // ---- TaskCache ----
     @NonNull
@@ -244,6 +256,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         mConditions = builder.mBuilderConditions;
         mNotificationIntent = builder.mBuilderNotificationIntent;
         mStartOnDeviceBoot = builder.mBuilderStartOnDeviceBoot;
+        mMaxActiveTasks = builder.mMaxActiveTasks;
 
         // Needs to be initialized with the manager name so that this instance is manager-specific
         mTaskPreferences = new TaskPreferences(mContext, taskName);
@@ -257,7 +270,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
         // ---- Executor Service ----
         // Fixed pool holds exactly n threads. It will enqueue the remaining jobs handed to it.
         ThreadFactory namedThreadFactory = new NamedThreadFactory(taskName);
-        mCachedExecutorService = Executors.newFixedThreadPool(MAX_ACTIVE_TASKS, namedThreadFactory);
+        mCachedExecutorService = Executors.newFixedThreadPool(mMaxActiveTasks, namedThreadFactory);
 
         // ---- Persistence ----
         // Synchronous load from SQLite. Not very performant but required for simplified in-memory cache
@@ -451,7 +464,7 @@ public abstract class BaseTaskManager<T extends BaseTask> implements Conditions.
      * @return true if the task is queued, false otherwise.
      */
     public boolean isQueued(@NonNull String taskId) {
-        if (sTaskPool.size() > MAX_ACTIVE_TASKS && isInTaskPool(taskId)) {
+        if (sTaskPool.size() > mMaxActiveTasks && isInTaskPool(taskId)) {
             T task = mTaskCache.get(taskId);
             Future future = sTaskPool.get(taskId);
             if (task != null && future != null) {
